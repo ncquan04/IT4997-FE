@@ -12,6 +12,7 @@ interface CategoriesSectionProps {
 
 const CategoriesSection = (props: CategoriesSectionProps) => {
   const swiperRef = useRef<SwiperRef>(null);
+  const parentCategories = props.categories.filter((c) => !c.parentCategoryId);
 
   return (
     <section
@@ -40,9 +41,9 @@ const CategoriesSection = (props: CategoriesSectionProps) => {
           1024: { spaceBetween: 30 },
         }}
       >
-        {props.categories.map((category, index) => (
+        {parentCategories.map((category, index) => (
           <SwiperSlide
-            key={index}
+            key={category._id || index}
             className="!w-[140px] sm:!w-[150px] md:!w-[160px] lg:!w-[170px]"
           >
             <CategoryCard category={category} />

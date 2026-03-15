@@ -5,6 +5,7 @@ import PhoneIcon from "../../../icons/PhoneIcon";
 import ComputerIcon from "../../../icons/ComputerIcon";
 import SmartwatchIcon from "../../../icons/SmartwatchIcon";
 import TabletIcon from "../../../icons/TabletIcon";
+import HeadphoneIcon2 from "../../../icons/HeadphoneIcon2";
 
 const CategoryCard = ({ category }: { category: Category }) => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ const CategoryCard = ({ category }: { category: Category }) => {
         return SmartwatchIcon;
       case "Tablet":
         return TabletIcon;
+      case "Tai nghe":
+        return HeadphoneIcon2;
       default:
         return PhoneIcon;
     }
