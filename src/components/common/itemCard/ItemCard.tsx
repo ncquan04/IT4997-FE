@@ -26,7 +26,7 @@ const ItemCard = ({ item }: ItemCardProps) => {
   const salePercent = useMemo(() => {
     if (variant && variant.salePrice && variant.salePrice < variant.price) {
       return Math.round(
-        ((variant.price - variant.salePrice) / variant.price) * 100
+        ((variant.price - variant.salePrice) / variant.price) * 100,
       );
     }
     return 0;
@@ -57,7 +57,7 @@ const ItemCard = ({ item }: ItemCardProps) => {
       console.error(error);
       showToast(
         error.message || i18n.t("Something went wrong, please try again later"),
-        "error"
+        "error",
       );
     }
   };
@@ -118,9 +118,6 @@ const ItemCard = ({ item }: ItemCardProps) => {
         </div>
         <div className="flex flex-row gap-2 items-center">
           <StarRating rating={item.rating || 0} />
-          <span className="text-xs md:text-sm text-black opacity-50 font-medium">
-            ({variant?.quantity || 0})
-          </span>
         </div>
       </section>
     </article>

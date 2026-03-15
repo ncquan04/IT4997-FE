@@ -18,6 +18,21 @@ interface ProductEnvelope<T> {
   pagination?: PaginationMeta;
 }
 
+export interface IProductBranchAvailability {
+  branchId: string;
+  name: string;
+  address: string;
+  phone: string;
+  quantity: number;
+}
+
+export interface IProductAvailabilityResponse {
+  productId: string;
+  variantId: string;
+  totalBranches: number;
+  branches: IProductBranchAvailability[];
+}
+
 const hasDataField = <T>(payload: unknown): payload is ProductEnvelope<T> => {
   if (!payload || typeof payload !== "object") {
     return false;
@@ -71,6 +86,20 @@ export const fetchProductById = async (productId: string) => {
     return unwrapProductPayload(response);
   } catch (error) {
     console.log("Fetch product by id error: ", error);
+    return null;
+  }
+};
+
+export const fetchProductAvailability = async (
+  productId: string,
+  variantId: string,
+) => {
+  try {
+    return await apiService.get<IProductAvailabilityResponse>(
+      `${API_PATH.PRODUCT.GET_AVAILABILITY(productId).URL}?variantId=${encodeURIComponent(variantId)}`,
+    );
+  } catch (error) {
+    console.log("Fetch product availability error: ", error);
     return null;
   }
 };
