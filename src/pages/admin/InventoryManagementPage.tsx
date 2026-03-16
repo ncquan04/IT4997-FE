@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import InventoryTable from "../../components/admin/InventoryTable";
 import { fetchBranches } from "../../services/api/api.branches";
 import { fetchInventoryList } from "../../services/api/api.inventory";
+import { fetchSuppliers } from "../../services/api/api.suppliers";
+import { createStockImport } from "../../services/api/api.stock-import";
+import { fetchProductById } from "../../services/api/api.products";
+import { SearchProducts } from "../../services/api/api.search";
+import StockImportForm from "../../components/admin/StockImportForm";
 import type { IBranch } from "../../shared/models/branch-model";
+import type { ISupplier } from "../../shared/models/supplier-model";
 import type { IInventoryItem } from "../../types/inventory.types";
+import type {
+  ICreateStockImportPayload,
+  IStockImportProductSearchOption,
+} from "../../types/stock-import.types";
 import { useToast } from "../../contexts/ToastContext";
 
 const PAGE_SIZE = 20;
@@ -20,10 +30,60 @@ const InventoryManagementPage = () => {
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [searchInput, setSearchInput] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
 
   const loadBranches = async () => {
     const branchData = await fetchBranches();
     setBranches(branchData);
+  };
+
+  const loadSuppliers = async () => {
+    const supplierData = await fetchSuppliers();
+    setSuppliers(supplierData);
+  };
+
+  const searchProductsForStockImport = async (
+    keyword: string,
+  ): Promise<IStockImportProductSearchOption[]> => {
+    const trimmedKeyword = keyword.trim();
+    if (trimmedKeyword.length < 2) {
+      return [];
+    }
+
+    const response = await SearchProducts({
+      userInput: trimmedKeyword,
+      page: 1,
+    });
+
+    if (!response) {
+      return [];
+    }
+
+    const deduplicated = new Map<string, IStockImportProductSearchOption>();
+    const loweredKeyword = trimmedKeyword.toLowerCase();
+
+    response.products.forEach((product) => {
+      const allSkus = (product.variants ?? [])
+        .map((variant) => variant.sku)
+        .filter((sku): sku is string => Boolean(sku));
+
+      const matchedSkus = allSkus.filter((sku) =>
+        sku.toLowerCase().includes(loweredKeyword),
+      );
+
+      deduplicated.set(product._id, {
+        productId: product._id,
+        title: product.title,
+        skuHints: matchedSkus.slice(0, 3),
+      });
+    });
+
+    return Array.from(deduplicated.values());
+  };
+
+  const loadProductDetailForStockImport = async (productId: string) => {
+    return await fetchProductById(productId);
   };
 
   const loadInventory = async (page = 1) => {
@@ -50,6 +110,29 @@ const InventoryManagementPage = () => {
     loadBranches();
   }, []);
 
+  const handleOpenCreateForm = async () => {
+    setIsFormOpen(true);
+
+    if (suppliers.length === 0) {
+      await loadSuppliers();
+    }
+  };
+
+  const handleCreateStockImport = async (
+    payload: ICreateStockImportPayload,
+  ): Promise<boolean> => {
+    const success = await createStockImport(payload);
+
+    if (!success) {
+      showToast("Failed to create stock import", "error");
+      return false;
+    }
+
+    showToast("Stock import created successfully", "success");
+    loadInventory(1);
+    return true;
+  };
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setSearchKeyword(searchInput.trim());
@@ -65,13 +148,38 @@ const InventoryManagementPage = () => {
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            Inventory Management
-          </h1>
-          <p className="text-gray-500 mt-1">
-            Track inventory quantity by branch and product variant.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Inventory Management
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Track inventory quantity by branch and product variant.
+            </p>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleOpenCreateForm}
+            className="flex items-center justify-center gap-2 bg-button2 hover:bg-hoverButton text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-200 transition-all"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Create Stock Import
+          </motion.button>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
@@ -123,6 +231,32 @@ const InventoryManagementPage = () => {
           />
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {isFormOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsFormOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <div className="relative z-10 w-full max-w-6xl pointer-events-none flex justify-center">
+              <div className="pointer-events-auto w-full">
+                <StockImportForm
+                  branches={branches}
+                  suppliers={suppliers}
+                  onSearchProducts={searchProductsForStockImport}
+                  onLoadProductDetail={loadProductDetailForStockImport}
+                  onSubmit={handleCreateStockImport}
+                  onCancel={() => setIsFormOpen(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
