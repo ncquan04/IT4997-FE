@@ -2,6 +2,7 @@ import type { ChangeEvent } from "react";
 import type { IProduct } from "../../../shared/models/product-model";
 import type { IStockImportProductSearchOption } from "../../../types/stock-import.types";
 import { formatPrice } from "../../../utils";
+import { getDerivedQuantity } from "../../../utils/stock-import";
 import StockImportItemRow from "./StockImportItemRow";
 import type { StockImportFormItem } from "./types";
 
@@ -17,7 +18,6 @@ interface StockImportItemsSectionProps {
   getItemProductOptions: (
     item: StockImportFormItem,
   ) => IStockImportProductSearchOption[];
-  getDerivedQuantity: (item: StockImportFormItem) => number;
   handleProductSearchChange: (index: number, value: string) => void;
   handleSelectProduct: (
     index: number,
@@ -44,7 +44,6 @@ const StockImportItemsSection = ({
   updateItem,
   getVariantsByProductId,
   getItemProductOptions,
-  getDerivedQuantity,
   handleProductSearchChange,
   handleSelectProduct,
   handleVariantChange,
@@ -109,7 +108,7 @@ const StockImportItemsSection = ({
               selectedVariant={selectedVariant}
               productOptions={getItemProductOptions(item)}
               lineTotal={lineTotals[index] || 0}
-              quantity={getDerivedQuantity(item)}
+              quantity={getDerivedQuantity(item.imeiInputs)}
               canRemoveItem={items.length > 1}
               updateItem={updateItem}
               handleProductSearchChange={handleProductSearchChange}
