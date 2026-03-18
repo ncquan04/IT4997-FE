@@ -31,7 +31,15 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
   useEffect(() => {
     const handleLoginRedirect = async () => {
       if (isAuthenticated) {
-        if (user?.role === UserRole.ADMIN) {
+        const staffRoles: string[] = [
+          UserRole.ADMIN,
+          UserRole.MANAGER,
+          UserRole.WAREHOUSE,
+          UserRole.SALES,
+          UserRole.TECHNICIAN,
+        ];
+
+        if (user?.role && staffRoles.includes(user.role)) {
           navigate(AppRoutes.ADMIN, { replace: true });
           return;
         }
@@ -74,7 +82,7 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
     email: string,
     password: string,
     phoneNumber: string,
-    dateOfBirth: string
+    dateOfBirth: string,
   ) => {
     if (!username || !email || !password || !phoneNumber || !dateOfBirth) {
       setError("Please fill in all fields");
@@ -162,7 +170,7 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
                     email,
                     password,
                     phoneNumber,
-                    dateOfBirth
+                    dateOfBirth,
                   )
                 }
               />
