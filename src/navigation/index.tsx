@@ -23,6 +23,7 @@ import AdminHeader from "../components/admin/AdminHeader";
 import PaymentReportPage from "../pages/admin/paymentReport";
 import OrderManagementPage from "../pages/admin/OrderManagementPage";
 import InventoryManagementPage from "../pages/admin/InventoryManagementPage";
+import StockImportManagementPage from "../pages/admin/StockImportManagementPage";
 
 export const AppRoutes = {
   DEFAULT: "/",
@@ -47,6 +48,7 @@ export const AppRoutes = {
   ADMIN_PAYMENTS: "/admin/payment-report",
   ADMIN_ORDERS: "/admin/orders",
   ADMIN_INVENTORY: "/admin/inventory",
+  ADMIN_STOCK_IMPORTS: "/admin/stock-imports",
 };
 
 const Mainlayout = ({ children }: { children: any }) => {
@@ -228,6 +230,14 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <InventoryManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_STOCK_IMPORTS}
+            element={
+              <AdminLayout>
+                <StockImportManagementPage />
               </AdminLayout>
             }
           />

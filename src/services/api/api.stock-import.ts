@@ -1,8 +1,10 @@
 import { Contacts } from "../../shared/contacts";
 import type {
   ICreateStockImportPayload,
+  IStockImportDetail,
   IStockImportListFilters,
   IStockImportListResponse,
+  IUpdateStockImportStatusPayload,
 } from "../../types/stock-import.types";
 import { apiService } from "./api.config";
 
@@ -29,6 +31,35 @@ export const createStockImport = async (
     return true;
   } catch (error) {
     console.log("Create stock import error: ", error);
+    return false;
+  }
+};
+
+export const fetchStockImportById = async (
+  id: string,
+): Promise<IStockImportDetail | null> => {
+  try {
+    return await apiService.get<IStockImportDetail>(
+      API_PATH.STOCK_IMPORT.GET_DETAIL(id).URL,
+    );
+  } catch (error) {
+    console.log("Fetch stock import detail error: ", error);
+    return null;
+  }
+};
+
+export const updateStockImportStatus = async (
+  id: string,
+  payload: IUpdateStockImportStatusPayload,
+): Promise<boolean> => {
+  try {
+    await apiService.patch(
+      API_PATH.STOCK_IMPORT.UPDATE_STATUS(id).URL,
+      payload,
+    );
+    return true;
+  } catch (error) {
+    console.log("Update stock import status error: ", error);
     return false;
   }
 };

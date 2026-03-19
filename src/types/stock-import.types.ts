@@ -1,7 +1,23 @@
+import type { IBranch } from "../shared/models/branch-model";
 import type { ISupplier } from "../shared/models/supplier-model";
 
 export interface IStockImportItemPayload {
   productId: string;
+  variantId: string;
+  quantity: number;
+  unitCost: number;
+  imeiList?: string[];
+}
+
+// Populated version used in detail modal
+export interface IStockImportItemPopulated {
+  productId:
+    | {
+        _id: string;
+        title: string;
+        variants: { _id: string; variantName: string }[];
+      }
+    | string;
   variantId: string;
   quantity: number;
   unitCost: number;
@@ -56,6 +72,24 @@ export interface IStockImportListResponse {
     total: number;
     totalPages: number;
   };
+}
+
+// Detail response (after populate)
+export interface IStockImportDetail {
+  _id: string;
+  branchId: IBranch;
+  supplierId: ISupplier;
+  createdBy: { _id: string; userName: string; email: string; role: string };
+  note: string;
+  status: number;
+  totalCost: number;
+  items: IStockImportItemPopulated[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface IUpdateStockImportStatusPayload {
+  status: number;
 }
 
 export type ISupplierListResponse = ISupplier[];
