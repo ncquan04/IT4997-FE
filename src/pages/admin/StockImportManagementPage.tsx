@@ -30,10 +30,6 @@ const STATUS_META: Record<number, { label: string; color: string }> = {
     label: "Pending",
     color: "bg-yellow-100 text-yellow-800",
   },
-  [STATUS_STOCK.APPROVED]: {
-    label: "Approved",
-    color: "bg-blue-100 text-blue-800",
-  },
   [STATUS_STOCK.COMPLETED]: {
     label: "Completed",
     color: "bg-green-100 text-green-800",
@@ -78,6 +74,7 @@ const StockImportManagementPage = () => {
   // Filters
   const [selectedBranchId, setSelectedBranchId] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<number | "">("");
+  const [searchId, setSearchId] = useState("");
 
   // Detail modal
   const [selectedDetail, setSelectedDetail] =
@@ -258,7 +255,20 @@ const StockImportManagementPage = () => {
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-2">
+                Search by ID
+              </label>
+              <input
+                type="text"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+                placeholder="ID"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-red-200"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">
                 Branch
@@ -292,7 +302,6 @@ const StockImportManagementPage = () => {
               >
                 <option value="">All Statuses</option>
                 <option value={STATUS_STOCK.PENDING}>Pending</option>
-                <option value={STATUS_STOCK.APPROVED}>Approved</option>
                 <option value={STATUS_STOCK.COMPLETED}>Completed</option>
                 <option value={STATUS_STOCK.CANCELLED}>Cancelled</option>
               </select>
@@ -342,69 +351,77 @@ const StockImportManagementPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {items.map((item) => {
-                    const statusMeta = STATUS_META[item.status] ?? {
-                      label: String(item.status),
-                      color: "bg-gray-100 text-gray-700",
-                    };
-                    return (
-                      <tr
-                        key={item._id}
-                        className="hover:bg-gray-50/50 transition-colors"
-                      >
-                        <td className="px-4 py-3 font-mono text-xs text-gray-500 whitespace-nowrap">
-                          {item._id}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-gray-800">
-                          {getBranchDisplay(item)}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {getSupplierDisplay(item)}
-                        </td>
-                        <td className="px-4 py-3 text-center text-gray-600">
-                          {item.items?.length ?? 0}
-                        </td>
-                        <td className="px-4 py-3 text-right font-semibold text-gray-800">
-                          {formatCurrency(item.totalCost)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMeta.color}`}
-                          >
-                            {statusMeta.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {getCreatorDisplay(item)}
-                        </td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">
-                          {formatDate(item.createdAt)}
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => handleOpenDetail(item._id)}
-                            title="View detail"
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition-colors"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="15"
-                              height="15"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                  {items
+                    .filter((item) =>
+                      searchId.trim()
+                        ? item._id
+                            .toLowerCase()
+                            .includes(searchId.trim().toLowerCase())
+                        : true,
+                    )
+                    .map((item) => {
+                      const statusMeta = STATUS_META[item.status] ?? {
+                        label: String(item.status),
+                        color: "bg-gray-100 text-gray-700",
+                      };
+                      return (
+                        <tr
+                          key={item._id}
+                          className="hover:bg-gray-50/50 transition-colors"
+                        >
+                          <td className="px-4 py-3 font-mono text-xs text-gray-500 whitespace-nowrap">
+                            {item._id}
+                          </td>
+                          <td className="px-4 py-3 font-medium text-gray-800">
+                            {getBranchDisplay(item)}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {getSupplierDisplay(item)}
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-600">
+                            {item.items?.length ?? 0}
+                          </td>
+                          <td className="px-4 py-3 text-right font-semibold text-gray-800">
+                            {formatCurrency(item.totalCost)}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMeta.color}`}
                             >
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                              <circle cx="12" cy="12" r="3" />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              {statusMeta.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {getCreatorDisplay(item)}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500 text-xs">
+                            {formatDate(item.createdAt)}
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => handleOpenDetail(item._id)}
+                              title="View detail"
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition-colors"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="15"
+                                height="15"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
