@@ -38,9 +38,11 @@ export default function OrderList({ orders }: { orders: any[] }) {
 
               {/* Status */}
               <div className="flex flex-wrap gap-2 text-xs mb-2">
-                <span className="px-2 py-0.5 rounded bg-green-100 text-green-600">
-                  {order.payment.method.toUpperCase()}
-                </span>
+                {order.payment?.method && (
+                  <span className="px-2 py-0.5 rounded bg-green-100 text-green-600">
+                    {order.payment.method.toUpperCase()}
+                  </span>
+                )}
                 <span className="text-gray-600">
                   {renderOrderStatus(order.statusOrder)}
                 </span>

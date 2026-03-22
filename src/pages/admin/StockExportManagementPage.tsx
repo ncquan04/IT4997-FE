@@ -177,12 +177,28 @@ const StockExportManagementPage = () => {
               Manage stock-out records (offline sales, damage, returns…)
             </p>
           </div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setIsFormOpen(true)}
-            className="px-5 py-2.5 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-button2 hover:bg-hoverButton text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-200 transition-all"
           >
-            + New Export
-          </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Export
+          </motion.button>
         </div>
 
         {/* Filters */}
@@ -190,7 +206,7 @@ const StockExportManagementPage = () => {
           <select
             value={selectedBranchId}
             onChange={(e) => setSelectedBranchId(e.target.value)}
-            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-400 outline-none"
+            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none"
           >
             <option value="">All Branches</option>
             {branches.map((b) => (
@@ -207,7 +223,7 @@ const StockExportManagementPage = () => {
                 e.target.value === "" ? "" : Number(e.target.value),
               )
             }
-            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-400 outline-none"
+            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-red-200 outline-none"
           >
             <option value="">All Statuses</option>
             {Object.entries(STATUS_META).map(([value, meta]) => (
@@ -263,7 +279,7 @@ const StockExportManagementPage = () => {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: idx * 0.03 }}
-                      className="border-b border-gray-100 hover:bg-orange-50/30 transition-colors"
+                      className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
                     >
                       <td className="p-4 font-mono text-sm text-gray-600">
                         #{item._id.slice(-8).toUpperCase()}

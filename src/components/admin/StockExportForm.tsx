@@ -296,15 +296,15 @@ const StockExportForm = ({
 
           {/* Grouped Summary */}
           {groups.length > 0 && (
-            <section className="bg-orange-50 rounded-xl border border-orange-100 p-5">
-              <h3 className="text-base font-semibold text-orange-800 mb-3">
+            <section className="bg-blue-50 rounded-xl border border-blue-100 p-5">
+              <h3 className="text-base font-semibold text-blue-800 mb-3">
                 Product Summary
               </h3>
               <div className="space-y-2">
                 {groups.map((g) => (
                   <div
                     key={`${g.productId}-${g.variantId}`}
-                    className="flex items-center justify-between bg-white border border-orange-100 rounded-lg px-4 py-2.5"
+                    className="flex items-center justify-between bg-white border border-blue-100 rounded-lg px-4 py-2.5"
                   >
                     <div>
                       <div className="text-sm font-semibold text-gray-800">
@@ -316,7 +316,7 @@ const StockExportForm = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500">Qty:</span>
-                      <span className="text-sm font-bold text-orange-600">
+                      <span className="text-sm font-bold text-blue-600">
                         {g.imeis.length}
                       </span>
                     </div>
@@ -341,7 +341,7 @@ const StockExportForm = ({
           type="submit"
           form="stock-export-form"
           disabled={isSaving}
-          className="px-6 py-2.5 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors"
+          className="px-6 py-2.5 rounded-xl bg-button2 hover:bg-hoverButton text-white font-semibold shadow-md disabled:opacity-70 disabled:cursor-not-allowed transition-all"
         >
           {isSaving ? "Saving..." : "Create Export"}
         </button>

@@ -40,7 +40,10 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
     }
   };
 
-  const price = variant?.price || 0;
+  const price =
+    variant?.salePrice && variant.salePrice < variant.price
+      ? variant.salePrice
+      : variant?.price || 0;
   const subtotal = price * quantity;
 
   return (

@@ -90,7 +90,9 @@ const CheckoutPage = () => {
         variantId: e.variant._id,
         variantName: e.variant.variantName ?? "",
         image: e.variant.images?.[0] ?? "",
-        title: e.product.title,
+        title: e.variant.variantName
+          ? `${e.product.title} - ${e.variant.variantName}`
+          : e.product.title,
         description: e.product.description || e.product.title,
         price:
           e.variant.salePrice && e.variant.salePrice < e.variant.price
