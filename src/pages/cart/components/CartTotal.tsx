@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import CommonButton from "../../../components/common/CommonButton";
 import { useI18n } from "../../../contexts/I18nContext";
 import { formatPrice } from "../../../utils";
+import { useAppSelector } from "../../../redux/store";
 
 const CartTotal = ({
   total,
@@ -12,9 +13,18 @@ const CartTotal = ({
 }) => {
   const i18n = useI18n();
   const navigate = useNavigate();
+  const cartItems = useAppSelector((state) => state.cart.cartItems);
 
   const handleProceedToCheckout = () => {
-    navigate("/checkout");
+    // Pass cart products as navigation state so CheckoutPage can populate the order.
+    const products = cartItems
+      .filter((item) => item.product.selectedVariant !== null)
+      .map((item) => ({
+        product: item.product,
+        variant: item.product.selectedVariant!,
+        quantity: item.quantity,
+      }));
+    navigate("/checkout", { state: { products } });
   };
 
   return (

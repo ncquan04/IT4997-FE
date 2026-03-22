@@ -28,8 +28,12 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    () => !!AppStorage.get("user"),
+  );
+  const [user, setUser] = useState<User | null>(
+    () => AppStorage.get("user") ?? null,
+  );
 
   const login = async (email: string, password: string) => {
     try {
@@ -67,15 +71,6 @@ const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       throw error;
     }
   };
-
-  useEffect(() => {
-    const storedUser = AppStorage.get("user");
-
-    if (storedUser) {
-      setIsAuthenticated(true);
-      setUser(storedUser);
-    }
-  }, []);
 
   return (
     <AuthContext.Provider

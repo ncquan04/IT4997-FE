@@ -20,25 +20,20 @@ export const createOrderBuyNow = async ({
   numberPhone: string;
   userName: string;
 }) => {
-  try {
-    const response = await apiService.post<IOrder>(API_PATH.ORDER.BUY_NOW.URL, {
-      listProduct,
-      sumPrice,
-      toAddress,
-      numberPhone,
-      userName,
-    });
-    return response;
-  } catch (err: any) {
-    console.log("Create order buy now error: ", err);
-    return null;
-  }
+  const response = await apiService.post<IOrder>(API_PATH.ORDER.BUY_NOW.URL, {
+    listProduct,
+    sumPrice,
+    toAddress,
+    numberPhone,
+    userName,
+  });
+  return response;
 };
 
 export const userOrderVisible = async () => {
   try {
     const response = await apiService.get<(IOrder & { payment: IPayment })[]>(
-      API_PATH.ORDER.VISIBLE.URL
+      API_PATH.ORDER.VISIBLE.URL,
     );
     return response;
   } catch (err: any) {
@@ -50,7 +45,7 @@ export const userOrderVisible = async () => {
 export const getUserCancelledOrders = async () => {
   try {
     const response = await apiService.get<(IOrder & { payment: IPayment })[]>(
-      API_PATH.ORDER.CANCEL_ORDER.URL
+      API_PATH.ORDER.CANCEL_ORDER.URL,
     );
     return response;
   } catch (err: any) {
@@ -62,7 +57,7 @@ export const getUserCancelledOrders = async () => {
 export const getUserReturnedOrders = async () => {
   try {
     const response = await apiService.get<(IOrder & { payment: IPayment })[]>(
-      API_PATH.ORDER.RETURN_ORDER.URL
+      API_PATH.ORDER.RETURN_ORDER.URL,
     );
     return response;
   } catch (err: any) {
@@ -173,7 +168,7 @@ export const putChangeOrderStatus = async ({
       {
         orderId,
         statusOrder,
-      }
+      },
     );
     return response;
   } catch (err) {
@@ -183,13 +178,13 @@ export const putChangeOrderStatus = async ({
 };
 
 export const getUserDeliveryOrdres = async () => {
-    try {
-        const response = await apiService.get<(IOrder & { payment: IPayment })[]>(
-            API_PATH.ORDER.DELIVERY_ORDER.URL,
-        );
-        return response;
-    } catch (err: any) {
-        console.log("get user cancel order ", err);
-        return null;
-    }
+  try {
+    const response = await apiService.get<(IOrder & { payment: IPayment })[]>(
+      API_PATH.ORDER.DELIVERY_ORDER.URL,
+    );
+    return response;
+  } catch (err: any) {
+    console.log("get user cancel order ", err);
+    return null;
+  }
 };

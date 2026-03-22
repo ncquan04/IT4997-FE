@@ -20,7 +20,7 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
           productId: product._id,
           variantId: variant._id,
           quantity: newQuantity,
-        })
+        }),
       ).then(() => {
         dispatch(cartAsync.fetchCart());
       });
@@ -33,7 +33,7 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
         cartAsync.removeFromCartThunk({
           productId: product._id,
           variantId: variant._id,
-        })
+        }),
       ).then(() => {
         dispatch(cartAsync.fetchCart());
       });
@@ -59,7 +59,7 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
           </h3>
           {variant && (
             <p className="text-sm text-text2 opacity-80">
-              {variant.colorName} - {variant.version}
+              {variant.variantName}
             </p>
           )}
         </div>
@@ -74,7 +74,7 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
       </div>
       <div className="w-full md:w-3/12 flex justify-center">
         <QuantitySelector
-          maxQuantity={variant?.quantity || 10}
+          maxQuantity={99}
           quantity={quantity}
           setQuantity={setQuantity}
           onQuantityChange={handleQuantityChange}

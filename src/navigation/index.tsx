@@ -25,6 +25,9 @@ import OrderManagementPage from "../pages/admin/OrderManagementPage";
 import InventoryManagementPage from "../pages/admin/InventoryManagementPage";
 import StockImportManagementPage from "../pages/admin/StockImportManagementPage";
 import StockExportManagementPage from "../pages/admin/StockExportManagementPage";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { UserRole } from "../shared/models/user-model";
 
 export const AppRoutes = {
   DEFAULT: "/",
@@ -53,6 +56,26 @@ export const AppRoutes = {
   ADMIN_STOCK_EXPORTS: "/admin/stock-exports",
 };
 
+const STAFF_ROLES = new Set<UserRole>([
+  UserRole.ADMIN,
+  UserRole.MANAGER,
+  UserRole.WAREHOUSE,
+  UserRole.SALES,
+  UserRole.TECHNICIAN,
+]);
+
+const RootRedirect = () => {
+  const { user } = useAuth();
+  if (user && STAFF_ROLES.has(user.role)) {
+    return <Navigate to={AppRoutes.ADMIN} replace />;
+  }
+  return (
+    <Mainlayout>
+      <HomePage />
+    </Mainlayout>
+  );
+};
+
 const Mainlayout = ({ children }: { children: any }) => {
   return (
     <>
@@ -79,14 +102,7 @@ const RootNavigation = () => {
     <>
       <BrowserRouter>
         <Routes>
-          <Route
-            path={AppRoutes.DEFAULT}
-            element={
-              <Mainlayout>
-                <HomePage />
-              </Mainlayout>
-            }
-          />
+          <Route path={AppRoutes.DEFAULT} element={<RootRedirect />} />
           <Route
             path={AppRoutes.HOME}
             element={
