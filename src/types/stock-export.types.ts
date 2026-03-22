@@ -99,5 +99,6 @@ export interface IUpdateStockExportStatusPayload {
 
 // Payload for POST /api/orders/:id/ship
 export interface IShipOrderPayload {
+  branchId?: string;
   imeiAssignments: IStockExportItemPayload[];
 }

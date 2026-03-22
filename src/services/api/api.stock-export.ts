@@ -83,13 +83,17 @@ export const fetchStockExportList = async (
 export const shipOrder = async (
   orderId: string,
   payload: IShipOrderPayload,
-): Promise<boolean> => {
+): Promise<string | true> => {
   try {
     await apiService.post(`${Contacts.ORDER_PATH}/${orderId}/ship`, payload);
     return true;
-  } catch (error) {
-    console.log("Ship order error: ", error);
-    return false;
+  } catch (error: any) {
+    const msg: string =
+      error?.response?.data?.message ??
+      error?.message ??
+      "Failed to ship order";
+    console.error("Ship order error:", msg, error?.response?.data);
+    return msg;
   }
 };
 

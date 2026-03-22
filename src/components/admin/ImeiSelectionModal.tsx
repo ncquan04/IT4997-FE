@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { IOrder, IProductItem } from "../../shared/models/order-model";
 import type { IPayment } from "../../shared/models/payment-model";
+import type { IBranch } from "../../shared/models/branch-model";
 import { fetchInventoryList } from "../../services/api/api.inventory";
 import { shipOrder } from "../../services/api/api.stock-export";
 import type { IStockExportItemPayload } from "../../types/stock-export.types";
@@ -13,6 +14,7 @@ type OrderWithPayment = IOrder & {
 
 interface Props {
   order: OrderWithPayment;
+  branches: IBranch[];
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -24,7 +26,17 @@ interface ItemInventory {
   error?: string;
 }
 
-const ImeiSelectionModal: React.FC<Props> = ({ order, onClose, onSuccess }) => {
+const ImeiSelectionModal: React.FC<Props> = ({
+  order,
+  branches,
+  onClose,
+  onSuccess,
+}) => {
+  // Prefer the branch already set on the order; fall back to empty (admin must pick)
+  const [branchId, setBranchId] = useState<string>(
+    order.branchId ? String(order.branchId) : "",
+  );
+
   const [inventories, setInventories] = useState<ItemInventory[]>(
     order.listProduct.map((item) => ({
       productItem: item,
@@ -40,15 +52,23 @@ const ImeiSelectionModal: React.FC<Props> = ({ order, onClose, onSuccess }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!branchId) return; // wait until branch is selected
+    // Reset selections when branch changes
+    setSelectedImeis({});
+    setInventories(
+      order.listProduct.map((item) => ({
+        productItem: item,
+        availableImeis: [],
+        isLoading: true,
+      })),
+    );
     const loadInventories = async () => {
       const results = await Promise.all(
         order.listProduct.map(async (item) => {
           try {
             const res = await fetchInventoryList({
-              branchId:
-                typeof order.branchId === "string"
-                  ? order.branchId
-                  : String(order.branchId ?? ""),
+              branchId,
+              productId: String(item.productId),
               variantId: String(item.variantId),
               limit: 1000,
             });
@@ -71,7 +91,7 @@ const ImeiSelectionModal: React.FC<Props> = ({ order, onClose, onSuccess }) => {
       setInventories(results);
     };
     loadInventories();
-  }, [order]);
+  }, [order, branchId]);
 
   const toggleImei = (productId: string, variantId: string, imei: string) => {
     const key = `${productId}_${variantId}`;
@@ -95,6 +115,7 @@ const ImeiSelectionModal: React.FC<Props> = ({ order, onClose, onSuccess }) => {
   };
 
   const isValid = () => {
+    if (!branchId) return false;
     return order.listProduct.every((item) => {
       const selected = getSelectedForItem(
         String(item.productId),
@@ -119,15 +140,13 @@ const ImeiSelectionModal: React.FC<Props> = ({ order, onClose, onSuccess }) => {
       }),
     );
 
-    const ok = await shipOrder(order._id, { imeiAssignments });
+    const ok = await shipOrder(order._id, { branchId, imeiAssignments });
     setIsSubmitting(false);
 
-    if (ok) {
+    if (ok === true) {
       onSuccess();
     } else {
-      setSubmitError(
-        "Failed to ship order. Please check inventory or try again.",
-      );
+      setSubmitError(ok);
     }
   };
 
@@ -182,78 +201,106 @@ const ImeiSelectionModal: React.FC<Props> = ({ order, onClose, onSuccess }) => {
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {inventories.map(
-              ({ productItem, availableImeis, isLoading, error }) => {
-                const productId = String(productItem.productId);
-                const variantId = String(productItem.variantId);
-                const selected = getSelectedForItem(productId, variantId);
-                const needed = productItem.quantity;
-                const done = selected.size === needed;
-
-                return (
-                  <div
-                    key={`${productId}_${variantId}`}
-                    className={`border rounded-xl p-4 transition-colors ${done ? "border-green-300 bg-green-50/40" : "border-gray-200"}`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          {productItem.title}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {productItem.variantName}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-xs font-semibold px-2.5 py-1 rounded-full ${done ? "bg-green-100 text-green-700" : selected.size > 0 ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
-                      >
-                        {selected.size} / {needed} selected
-                      </span>
-                    </div>
-
-                    {isLoading ? (
-                      <div className="text-sm text-gray-400 italic">
-                        Loading available IMEIs...
-                      </div>
-                    ) : error ? (
-                      <div className="text-sm text-red-500">{error}</div>
-                    ) : availableImeis.length === 0 ? (
-                      <div className="text-sm text-red-500 font-medium">
-                        ⚠ No IMEIs available in inventory for this item.
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {availableImeis.map((imei) => {
-                          const isChecked = selected.has(imei);
-                          const isDisabled =
-                            !isChecked && selected.size >= needed;
-                          return (
-                            <label
-                              key={imei}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors
-                              ${isChecked ? "bg-blue-50 border-blue-400 text-blue-800" : isDisabled ? "opacity-40 cursor-not-allowed border-gray-200" : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/40"}`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                disabled={isDisabled}
-                                onChange={() =>
-                                  toggleImei(productId, variantId, imei)
-                                }
-                                className="accent-blue-600"
-                              />
-                              <span className="font-mono text-xs truncate">
-                                {imei}
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              },
+            {/* Branch selector — shown when the order has no branch yet */}
+            {!order.branchId && (
+              <div className="border border-orange-200 bg-orange-50 rounded-xl p-4">
+                <label className="block text-sm font-semibold text-orange-800 mb-2">
+                  Select fulfillment branch
+                </label>
+                <select
+                  value={branchId}
+                  onChange={(e) => setBranchId(e.target.value)}
+                  className="w-full border border-orange-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                >
+                  <option value="">— Choose a branch —</option>
+                  {branches.map((b) => (
+                    <option key={String(b._id)} value={String(b._id)}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+                {!branchId && (
+                  <p className="text-xs text-orange-600 mt-1">
+                    You must select a branch to load inventory and ship this
+                    order.
+                  </p>
+                )}
+              </div>
             )}
+
+            {branchId &&
+              inventories.map(
+                ({ productItem, availableImeis, isLoading, error }) => {
+                  const productId = String(productItem.productId);
+                  const variantId = String(productItem.variantId);
+                  const selected = getSelectedForItem(productId, variantId);
+                  const needed = productItem.quantity;
+                  const done = selected.size === needed;
+
+                  return (
+                    <div
+                      key={`${productId}_${variantId}`}
+                      className={`border rounded-xl p-4 transition-colors ${done ? "border-green-300 bg-green-50/40" : "border-gray-200"}`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="font-semibold text-gray-900 text-sm">
+                            {productItem.title}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {productItem.variantName}
+                          </p>
+                        </div>
+                        <span
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-full ${done ? "bg-green-100 text-green-700" : selected.size > 0 ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"}`}
+                        >
+                          {selected.size} / {needed} selected
+                        </span>
+                      </div>
+
+                      {isLoading ? (
+                        <div className="text-sm text-gray-400 italic">
+                          Loading available IMEIs...
+                        </div>
+                      ) : error ? (
+                        <div className="text-sm text-red-500">{error}</div>
+                      ) : availableImeis.length === 0 ? (
+                        <div className="text-sm text-red-500 font-medium">
+                          ⚠ No IMEIs available in inventory for this item.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {availableImeis.map((imei) => {
+                            const isChecked = selected.has(imei);
+                            const isDisabled =
+                              !isChecked && selected.size >= needed;
+                            return (
+                              <label
+                                key={imei}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors
+                              ${isChecked ? "bg-blue-50 border-blue-400 text-blue-800" : isDisabled ? "opacity-40 cursor-not-allowed border-gray-200" : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/40"}`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  disabled={isDisabled}
+                                  onChange={() =>
+                                    toggleImei(productId, variantId, imei)
+                                  }
+                                  className="accent-blue-600"
+                                />
+                                <span className="font-mono text-xs truncate">
+                                  {imei}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                },
+              )}
 
             {submitError && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">

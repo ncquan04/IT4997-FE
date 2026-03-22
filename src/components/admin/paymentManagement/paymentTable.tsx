@@ -51,11 +51,13 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
     return (
       payment.method === Contacts.PaymentMethod.STRIPE &&
       payment.status === STATUS_PAYMENT.PAID &&
-      orderStatus === Contacts.Status.Order.SHIPPING
+      (orderStatus === Contacts.Status.Order.SHIPPING ||
+        orderStatus === Contacts.Status.Order.DELIVERED)
     );
   };
 
-  const [open, setOpen] = useState(false);
+  // Store the orderId of the row whose modal is open (null = closed)
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null);
 
   const handleRefund = async (data: IRefundReport) => {
     try {
@@ -96,6 +98,7 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
 
       if (!report) throw new Error("");
 
+      setOpenOrderId(null);
       dispatch(setPaymentTab(STATUS_PAYMENT.REFUNDED));
     } catch (err) {
       alert("refund error");
@@ -191,7 +194,7 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
                     {canRefund(order) && (
                       <>
                         <button
-                          onClick={() => setOpen(true)}
+                          onClick={() => setOpenOrderId(order._id)}
                           className="
                                                 px-3 py-1 text-xs font-medium
                                                 bg-red-500 text-white rounded
@@ -201,11 +204,11 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
                         >
                           Refund
                         </button>
-                        {open && (
+                        {openOrderId === order._id && (
                           <RefundModal
-                            open={open}
+                            open={true}
                             order={order}
-                            onClose={() => setOpen(false)}
+                            onClose={() => setOpenOrderId(null)}
                             onSubmit={(data: IRefundReport) => {
                               handleRefund?.(data);
                             }}
