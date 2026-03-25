@@ -41,7 +41,8 @@ const ALLOWED_TRANSITIONS: Record<number, number[]> = {
 };
 
 const REASON_LABELS: Record<ExportReason, string> = {
-  SALE: "Offline Sale",
+  SALE: "Bán tại quầy",
+  ONLINE_SALE: "Bán online",
   RETURN_TO_SUPPLIER: "Return to Supplier",
   DAMAGED: "Damaged",
   OTHER: "Other",
@@ -49,6 +50,7 @@ const REASON_LABELS: Record<ExportReason, string> = {
 
 const REASON_COLORS: Record<ExportReason, string> = {
   SALE: "bg-blue-100 text-blue-800",
+  ONLINE_SALE: "bg-indigo-100 text-indigo-800",
   RETURN_TO_SUPPLIER: "bg-purple-100 text-purple-800",
   DAMAGED: "bg-red-100 text-red-800",
   OTHER: "bg-gray-100 text-gray-700",

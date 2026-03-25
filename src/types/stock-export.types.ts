@@ -1,6 +1,11 @@
 import type { IBranch } from "../shared/models/branch-model";
 
-export type ExportReason = "SALE" | "RETURN_TO_SUPPLIER" | "DAMAGED" | "OTHER";
+export type ExportReason =
+  | "SALE"
+  | "ONLINE_SALE"
+  | "RETURN_TO_SUPPLIER"
+  | "DAMAGED"
+  | "OTHER";
 
 export interface IImeiLookupResult {
   productId: string;

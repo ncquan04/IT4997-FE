@@ -11,7 +11,7 @@ import { lookupImei } from "../../services/api/api.stock-export";
 import { useStockExportItems } from "../../hooks/stock-export/useStockExportItems";
 
 const EXPORT_REASONS: { value: ExportReason; label: string }[] = [
-  { value: "SALE", label: "Offline Sale" },
+  { value: "SALE", label: "Bán tại quầy" },
   { value: "RETURN_TO_SUPPLIER", label: "Return to Supplier" },
   { value: "DAMAGED", label: "Damaged / Defective" },
   { value: "OTHER", label: "Other" },

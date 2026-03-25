@@ -25,6 +25,7 @@ import OrderManagementPage from "../pages/admin/OrderManagementPage";
 import InventoryManagementPage from "../pages/admin/InventoryManagementPage";
 import StockImportManagementPage from "../pages/admin/StockImportManagementPage";
 import StockExportManagementPage from "../pages/admin/StockExportManagementPage";
+import WarrantyManagementPage from "../pages/admin/WarrantyManagementPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { UserRole } from "../shared/models/user-model";
@@ -54,6 +55,7 @@ export const AppRoutes = {
   ADMIN_INVENTORY: "/admin/inventory",
   ADMIN_STOCK_IMPORTS: "/admin/stock-imports",
   ADMIN_STOCK_EXPORTS: "/admin/stock-exports",
+  ADMIN_WARRANTY: "/admin/warranty",
 };
 
 const STAFF_ROLES = new Set<UserRole>([
@@ -264,6 +266,14 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <StockExportManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_WARRANTY}
+            element={
+              <AdminLayout>
+                <WarrantyManagementPage />
               </AdminLayout>
             }
           />
