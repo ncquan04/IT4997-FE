@@ -106,7 +106,7 @@ export const uploadWarrantyImage = async (
     const formData = new FormData();
     formData.append("file", file);
     const res = await apiService.post<{ url: string; publicId: string }>(
-      "upload/image",
+      "api/upload/image",
       formData,
       { headers: { "Content-Type": "multipart/form-data" } } as any,
     );
