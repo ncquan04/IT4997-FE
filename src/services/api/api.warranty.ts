@@ -69,6 +69,27 @@ export const createWarrantyRequest = async (
   }
 };
 
+// ─── Danh sách bảo hành của user đang đăng nhập ──────────────────────────────
+export const fetchMyWarranties = async (
+  params: { status?: number; page?: number; limit?: number } = {},
+): Promise<IWarrantyListResponse | null> => {
+  try {
+    const query = new URLSearchParams();
+    if (typeof params.status === "number")
+      query.append("status", String(params.status));
+    if (params.page) query.append("page", String(params.page));
+    if (params.limit) query.append("limit", String(params.limit));
+    const qs = query.toString();
+    const url = qs
+      ? `${API_PATH.WARRANTY.MY_WARRANTIES.URL}?${qs}`
+      : API_PATH.WARRANTY.MY_WARRANTIES.URL;
+    return await apiService.get<IWarrantyListResponse>(url);
+  } catch (error) {
+    console.log("Fetch my warranties error: ", error);
+    return null;
+  }
+};
+
 // ─── Cập nhật trạng thái ──────────────────────────────────────────────────────
 export const updateWarrantyStatus = async (
   id: string,
