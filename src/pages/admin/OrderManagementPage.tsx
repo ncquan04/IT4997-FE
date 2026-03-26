@@ -7,15 +7,11 @@ import { useToast } from "../../contexts/ToastContext";
 import { Contacts } from "../../shared/contacts";
 import type { IOrder } from "../../shared/models/order-model";
 import type { IPayment } from "../../shared/models/payment-model";
-import type { IBranch } from "../../shared/models/branch-model";
-import { fetchBranches } from "../../services/api/api.branches";
 
 const OrderManagementPage = () => {
   const dispatch = useAppDispatch();
   const { adminOrders, isloading } = useAppSelector((state) => state.order);
   const { showToast } = useToast();
-
-  const [branches, setBranches] = useState<IBranch[]>([]);
 
   // Local state for filters
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -47,9 +43,6 @@ const OrderManagementPage = () => {
 
   useEffect(() => {
     loadData(1);
-    fetchBranches().then((data) => {
-      if (data) setBranches(data);
-    });
   }, [dispatch, statusFilter]); // Reload when status filter changes
 
   const handleSearch = (e: React.FormEvent) => {
@@ -139,11 +132,10 @@ const OrderManagementPage = () => {
           onShipClick={(order) => setShipModalOrder(order as any)}
         />
 
-        {/* IMEI Selection Modal — shown when admin clicks Ship on a PROCESSING order */}
+        {/* Ship Confirm Modal */}
         {shipModalOrder && (
           <ImeiSelectionModal
             order={shipModalOrder}
-            branches={branches}
             onClose={() => setShipModalOrder(null)}
             onSuccess={handleShipSuccess}
           />

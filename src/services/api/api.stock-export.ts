@@ -2,7 +2,6 @@ import { Contacts } from "../../shared/contacts";
 import type {
   ICreateStockExportPayload,
   IImeiLookupResult,
-  IShipOrderPayload,
   IStockExportDetail,
   IStockExportListFilters,
   IStockExportListResponse,
@@ -79,13 +78,10 @@ export const fetchStockExportList = async (
   }
 };
 
-// Case 1 — ship an online order: provide IMEI assignments for each product
-export const shipOrder = async (
-  orderId: string,
-  payload: IShipOrderPayload,
-): Promise<string | true> => {
+// Case 1 — ship an online order: IMEI assignments already stored on the order at checkout
+export const shipOrder = async (orderId: string): Promise<string | true> => {
   try {
-    await apiService.post(`${Contacts.ORDER_PATH}/${orderId}/ship`, payload);
+    await apiService.post(`${Contacts.ORDER_PATH}/${orderId}/ship`, {});
     return true;
   } catch (error: any) {
     const msg: string =

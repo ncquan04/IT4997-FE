@@ -3,105 +3,16 @@ import {
   fetchProductAvailability,
   type IProductBranchAvailability,
 } from "../../../services/api/api.products";
-
-type GeoPoint = {
-  lat: number;
-  lon: number;
-};
+import {
+  type GeoPoint,
+  calculateDistanceKm,
+  geocodeAddress,
+  getUserCoordinatesByBrowser,
+  getUserCoordinatesByIp,
+} from "../../../utils/geo";
 
 type ToastType = "success" | "error";
 type ShowToast = (title: string, type: ToastType) => void;
-
-const branchGeoCache = new Map<string, GeoPoint>();
-
-const toRadians = (degree: number) => (degree * Math.PI) / 180;
-
-const calculateDistanceKm = (from: GeoPoint, to: GeoPoint): number => {
-  const earthRadiusKm = 6371;
-  const dLat = toRadians(to.lat - from.lat);
-  const dLon = toRadians(to.lon - from.lon);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(from.lat)) *
-      Math.cos(toRadians(to.lat)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return earthRadiusKm * c;
-};
-
-const getUserCoordinatesByIp = async (): Promise<GeoPoint | null> => {
-  try {
-    const response = await fetch("https://ipapi.co/json/");
-    if (!response.ok) return null;
-
-    const data = await response.json();
-    const lat = Number(data?.latitude);
-    const lon = Number(data?.longitude);
-
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-    return { lat, lon };
-  } catch {
-    return null;
-  }
-};
-
-const getUserCoordinatesByBrowser = async (): Promise<GeoPoint | null> => {
-  if (typeof navigator === "undefined" || !navigator.geolocation) {
-    return null;
-  }
-
-  return await new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        resolve({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
-      },
-      () => resolve(null),
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 120000,
-      },
-    );
-  });
-};
-
-const geocodeAddress = async (address: string): Promise<GeoPoint | null> => {
-  const cacheKey = address.trim().toLowerCase();
-  if (!cacheKey) return null;
-
-  if (branchGeoCache.has(cacheKey)) {
-    return branchGeoCache.get(cacheKey) ?? null;
-  }
-
-  try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) return null;
-
-    const data = (await response.json()) as Array<{ lat: string; lon: string }>;
-    const first = data?.[0];
-    if (!first) return null;
-
-    const lat = Number(first.lat);
-    const lon = Number(first.lon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-
-    const point = { lat, lon };
-    branchGeoCache.set(cacheKey, point);
-    return point;
-  } catch {
-    return null;
-  }
-};
 
 const findNearestBranchByPoint = async (
   branches: IProductBranchAvailability[],

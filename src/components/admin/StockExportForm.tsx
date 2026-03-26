@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../contexts/AuthContext";
+import { UserRole } from "../../shared/models/user-model";
 import type { IBranch } from "../../shared/models/branch-model";
 import type {
   ICreateStockExportPayload,
@@ -63,7 +64,8 @@ const StockExportForm = ({
   const [reason, setReason] = useState<ExportReason>("OTHER");
   const [note, setNote] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const isBranchLocked = Boolean(user?.branchId);
+  const isBranchLocked =
+    Boolean(user?.branchId) && user?.role !== UserRole.ADMIN;
 
   // keep ref in sync so the stable lookup callback always reads the latest branchId
   const branchIdRef = useRef(branchId);

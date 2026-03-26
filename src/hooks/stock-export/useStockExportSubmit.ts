@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import type { FormEvent } from "react";
 import { useAuth } from "../../contexts/AuthContext";
+import { UserRole } from "../../shared/models/user-model";
 import type {
   ICreateStockExportPayload,
   IStockExportItemPayload,
@@ -62,7 +63,7 @@ export const useStockExportSubmit = ({
 
   return {
     branchId,
-    isBranchLocked: Boolean(user?.branchId),
+    isBranchLocked: Boolean(user?.branchId) && user?.role !== UserRole.ADMIN,
     reason,
     note,
     isSaving,

@@ -13,12 +13,14 @@ export const createOrderBuyNow = async ({
   toAddress,
   numberPhone,
   userName,
+  branchPriority = [],
 }: {
   listProduct: IProductItem[];
   sumPrice: number;
   toAddress: string;
   numberPhone: string;
   userName: string;
+  branchPriority?: string[];
 }) => {
   const response = await apiService.post<IOrder>(API_PATH.ORDER.BUY_NOW.URL, {
     listProduct,
@@ -26,6 +28,7 @@ export const createOrderBuyNow = async ({
     toAddress,
     numberPhone,
     userName,
+    branchPriority,
   });
   return response;
 };

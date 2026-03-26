@@ -21,6 +21,11 @@ import type { IInputBillingProps } from "./components/inputBilling";
 import CommonButton from "../../components/common/CommonButton";
 import { createOrderBuyNow } from "../../services/api/api.order";
 import { createPayment } from "../../services/api/api.payment";
+import { fetchProductAvailability } from "../../services/api/api.products";
+import {
+  getUserCoordinatesByIp,
+  sortBranchesByDistance,
+} from "../../utils/geo";
 
 interface CheckoutState {
   products: {
@@ -108,12 +113,40 @@ const CheckoutPage = () => {
             ? e.variant.salePrice * e.quantity
             : e.variant.price * e.quantity,
       }));
+
+      // Build branchPriority: fetch availability for all items, collect unique
+      // branches, then sort by distance from user location (IP-based).
+      const availabilities = await Promise.all(
+        order.listProduct.map((e) =>
+          fetchProductAvailability(e.product._id, e.variant._id),
+        ),
+      );
+      const branchMap = new Map<string, string>(); // branchId -> address
+      for (const avail of availabilities) {
+        if (avail?.branches) {
+          for (const branch of avail.branches) {
+            if (!branchMap.has(branch.branchId)) {
+              branchMap.set(branch.branchId, branch.address);
+            }
+          }
+        }
+      }
+      const branchList = Array.from(branchMap.entries()).map(
+        ([branchId, address]) => ({ branchId, address }),
+      );
+      const userPoint = await getUserCoordinatesByIp();
+      const branchPriority =
+        userPoint && branchList.length > 0
+          ? await sortBranchesByDistance(branchList, userPoint)
+          : branchList.map((b) => b.branchId);
+
       const newOrder = await createOrderBuyNow({
         listProduct,
         sumPrice: order.sumPrice,
         toAddress: `Street: ${userInfo.streetAddress}, City: ${userInfo.city}`,
         numberPhone: userInfo.numberPhone,
         userName: userInfo.name,
+        branchPriority,
       });
       if (!newOrder) {
         throw new Error("order error");
