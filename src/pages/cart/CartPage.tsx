@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { HORIZONTAL_PADDING_REM } from "../../constants";
 import { useI18n } from "../../contexts/I18nContext";
 import ItemCard from "./components/ItemCard";
 import CommonButton from "../../components/common/CommonButton";
-import CouponCode from "./components/CouponCode";
 import CartTotal from "./components/CartTotal";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import cartAsync from "../../redux/async-thunk/cart.thunk";
@@ -15,10 +14,8 @@ const CartPage = () => {
   const dispatch = useAppDispatch();
 
   const { cartItems, totalPrice, isLoading } = useAppSelector(
-    (state) => state.cart
+    (state) => state.cart,
   );
-
-  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
     dispatch(cartAsync.fetchCart());
@@ -114,9 +111,8 @@ const CartPage = () => {
         </div>
       </section>
 
-      <div className="flex flex-col lg:flex-row justify-between gap-8 lg:gap-0 items-center lg:items-start">
-        <CouponCode setDiscount={setDiscount} />
-        <CartTotal total={totalPrice} discount={discount} />
+      <div className="flex flex-col lg:flex-row-reverse justify-between gap-8 lg:gap-0 items-center lg:items-start">
+        <CartTotal total={totalPrice} />
       </div>
     </main>
   );

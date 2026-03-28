@@ -16,7 +16,13 @@ const bankOptionsImg = [bank1, bank2, bank3, bank4];
 
 const PAYMENT_METHOD = Contacts.PaymentMethod;
 
-const OrderSummary = () => {
+const OrderSummary = ({
+  couponDiscount = 0,
+  couponCode = "",
+}: {
+  couponDiscount?: number;
+  couponCode?: string;
+}) => {
   const dispatch = useAppDispatch();
   const method = useAppSelector(
     (state: RootState) => state.payment.order.method,
@@ -119,20 +125,27 @@ const OrderSummary = () => {
       {/* ORDER SUMMARY */}
       <div className="border-t pt-4 space-y-3 text-sm">
         <div className="flex justify-between">
-          <span>Subtotal</span>
+          <span>Subtotal (original)</span>
           <span>{formatPrice(subtotal + totalDiscount)}</span>
         </div>
 
         {totalDiscount > 0 && (
           <div className="flex justify-between text-green-600">
-            <span>Total discount</span>
+            <span>Sale discount</span>
             <span>-{formatPrice(totalDiscount)}</span>
+          </div>
+        )}
+
+        {couponDiscount > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span>Coupon ({couponCode})</span>
+            <span>-{formatPrice(couponDiscount)}</span>
           </div>
         )}
 
         <div className="flex justify-between font-semibold text-base border-t pt-3">
           <span>Total</span>
-          <span>{formatPrice(subtotal)}</span>
+          <span>{formatPrice(Math.max(0, subtotal - couponDiscount))}</span>
         </div>
       </div>
 

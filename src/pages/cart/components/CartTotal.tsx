@@ -4,19 +4,12 @@ import { useI18n } from "../../../contexts/I18nContext";
 import { formatPrice } from "../../../utils";
 import { useAppSelector } from "../../../redux/store";
 
-const CartTotal = ({
-  total,
-  discount,
-}: {
-  total: number;
-  discount: number;
-}) => {
+const CartTotal = ({ total }: { total: number }) => {
   const i18n = useI18n();
   const navigate = useNavigate();
   const cartItems = useAppSelector((state) => state.cart.cartItems);
 
   const handleProceedToCheckout = () => {
-    // Pass cart products as navigation state so CheckoutPage can populate the order.
     const products = cartItems
       .filter((item) => item.product.selectedVariant !== null)
       .map((item) => ({
@@ -45,19 +38,10 @@ const CartTotal = ({
         <div className="w-full h-px bg-[#00000033]" />
         <div className="flex flex-row justify-between items-center">
           <span className="text-base font-normal text-text2">
-            {i18n.t("Discount")}
-          </span>
-          <span className="text-base font-normal text-text2">
-            {formatPrice(total * (discount / 100))}
-          </span>
-        </div>
-        <div className="w-full h-px bg-[#00000033]" />
-        <div className="flex flex-row justify-between items-center">
-          <span className="text-base font-normal text-text2">
             {i18n.t("Total")}
           </span>
           <span className="text-base font-normal text-text2">
-            {formatPrice(total - total * (discount / 100))}
+            {formatPrice(total)}
           </span>
         </div>
       </div>

@@ -26,6 +26,7 @@ import {
   getUserCoordinatesByIp,
   sortBranchesByDistance,
 } from "../../utils/geo";
+import CouponCode from "../cart/components/CouponCode";
 
 interface CheckoutState {
   products: {
@@ -76,6 +77,14 @@ const CheckoutPage = () => {
   // Memoize so the array reference is stable — a bare `|| []` would create a
   // new reference every render and cause the useEffect below to loop forever.
   const products = useMemo(() => state?.products ?? [], []);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+
+  const handleCouponApply = (code: string, discountAmount: number) => {
+    setCouponCode(code);
+    setCouponDiscount(discountAmount);
+  };
 
   const [isError, setIsError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -154,6 +163,7 @@ const CheckoutPage = () => {
       const newPayment = await createPayment({
         orderId: newOrder._id,
         method: order.method,
+        couponCode: couponCode || undefined,
       });
       if (!newPayment) {
         throw new Error("create payment error");
@@ -191,7 +201,11 @@ const CheckoutPage = () => {
       >
         <BillingDetails BillingInputData={BillingInputData} />
         <section className="w-full lg:w-[40%] mt-8 lg:mt-24 text-black space-y-4">
-          <OrderSummary />
+          <OrderSummary
+            couponDiscount={couponDiscount}
+            couponCode={couponCode}
+          />
+          <CouponCode onApply={handleCouponApply} />
           {/* ACTION */}
           <CommonButton
             disable={disable}
