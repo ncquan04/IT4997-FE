@@ -92,9 +92,10 @@ const CheckoutPage = () => {
       products.map((p) => ({
         productId: p.product._id,
         price:
-          p.variant.salePrice && p.variant.salePrice < p.variant.price
+          p.variant.effectiveDiscountPrice ??
+          (p.variant.salePrice && p.variant.salePrice < p.variant.price
             ? p.variant.salePrice
-            : p.variant.price,
+            : p.variant.price),
         quantity: p.quantity,
       })),
     [products],

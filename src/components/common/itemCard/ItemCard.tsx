@@ -31,9 +31,16 @@ const ItemCard = ({ item }: ItemCardProps) => {
   const hasMultipleVariants = item.variants && item.variants.length > 1;
 
   const salePercent = useMemo(() => {
-    if (variant && variant.salePrice && variant.salePrice < variant.price) {
+    if (!variant) return 0;
+    // effectiveDiscountPrice (from DiscountProgram) takes priority over salePrice
+    const discountedPrice =
+      variant.effectiveDiscountPrice ??
+      (variant.salePrice && variant.salePrice < variant.price
+        ? variant.salePrice
+        : null);
+    if (discountedPrice !== null && discountedPrice < variant.price) {
       return Math.round(
-        ((variant.price - variant.salePrice) / variant.price) * 100,
+        ((variant.price - discountedPrice) / variant.price) * 100,
       );
     }
     return 0;
@@ -151,20 +158,34 @@ const ItemCard = ({ item }: ItemCardProps) => {
           {item.title}
         </h3>
         <div className="flex flex-row gap-2 md:gap-3">
-          <data
-            className="text-sm md:text-base text-secondary2 font-medium"
-            value={variant?.salePrice || variant?.price}
-          >
-            {formatPrice(variant?.salePrice || variant?.price || 0)}
-          </data>
-          {variant?.salePrice && (
-            <data
-              className="text-sm md:text-base text-black opacity-50 line-through font-medium"
-              value={variant?.price}
-            >
-              {formatPrice(variant?.price || 0)}
-            </data>
-          )}
+          {(() => {
+            const effectivePrice =
+              variant?.effectiveDiscountPrice ??
+              (variant?.salePrice && variant.salePrice < variant.price
+                ? variant.salePrice
+                : null);
+            const displayPrice = effectivePrice ?? variant?.price ?? 0;
+            const showStrike =
+              effectivePrice !== null && effectivePrice !== undefined;
+            return (
+              <>
+                <data
+                  className="text-sm md:text-base text-secondary2 font-medium"
+                  value={displayPrice}
+                >
+                  {formatPrice(displayPrice)}
+                </data>
+                {showStrike && (
+                  <data
+                    className="text-sm md:text-base text-black opacity-50 line-through font-medium"
+                    value={variant?.price}
+                  >
+                    {formatPrice(variant?.price || 0)}
+                  </data>
+                )}
+              </>
+            );
+          })()}
         </div>
         <div className="flex flex-row gap-2 items-center">
           <StarRating rating={item.rating || 0} />

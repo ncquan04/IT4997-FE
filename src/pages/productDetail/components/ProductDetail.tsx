@@ -313,18 +313,32 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
             role="group"
             aria-label="Product pricing"
           >
-            <span
-              className={`text-xl sm:text-2xl font-normal ${
-                selectedVariant?.salePrice ? "text-button2" : "text-black"
-              } ${selectedVariant?.salePrice ? "line-through" : ""}`}
-            >
-              {formatPrice(selectedVariant?.price || 0)}
-            </span>
-            {selectedVariant?.salePrice && (
-              <span className="text-xl sm:text-2xl text-black font-font-normal">
-                {formatPrice(selectedVariant.salePrice)}
-              </span>
-            )}
+            {(() => {
+              const effectivePrice =
+                selectedVariant?.effectiveDiscountPrice ??
+                (selectedVariant?.salePrice &&
+                selectedVariant.salePrice < selectedVariant.price
+                  ? selectedVariant.salePrice
+                  : null);
+              const hasDiscount =
+                effectivePrice !== null && effectivePrice !== undefined;
+              return (
+                <>
+                  <span
+                    className={`text-xl sm:text-2xl font-normal ${
+                      hasDiscount ? "text-button2 line-through" : "text-black"
+                    }`}
+                  >
+                    {formatPrice(selectedVariant?.price || 0)}
+                  </span>
+                  {hasDiscount && (
+                    <span className="text-xl sm:text-2xl text-black font-normal">
+                      {formatPrice(effectivePrice!)}
+                    </span>
+                  )}
+                </>
+              );
+            })()}
           </div>
           <p className="text-sm font-normal text-black">
             {product.description}

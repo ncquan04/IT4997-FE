@@ -27,6 +27,7 @@ import StockImportManagementPage from "../pages/admin/StockImportManagementPage"
 import StockExportManagementPage from "../pages/admin/StockExportManagementPage";
 import WarrantyManagementPage from "../pages/admin/WarrantyManagementPage";
 import CouponManagementPage from "../pages/admin/CouponManagementPage";
+import DiscountProgramManagementPage from "../pages/admin/DiscountProgramManagementPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { UserRole } from "../shared/models/user-model";
@@ -58,6 +59,7 @@ export const AppRoutes = {
   ADMIN_STOCK_EXPORTS: "/admin/stock-exports",
   ADMIN_WARRANTY: "/admin/warranty",
   ADMIN_COUPONS: "/admin/coupons",
+  ADMIN_DISCOUNT_PROGRAMS: "/admin/discount-programs",
 };
 
 const STAFF_ROLES = new Set<UserRole>([
@@ -284,6 +286,14 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <CouponManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_DISCOUNT_PROGRAMS}
+            element={
+              <AdminLayout>
+                <DiscountProgramManagementPage />
               </AdminLayout>
             }
           />
