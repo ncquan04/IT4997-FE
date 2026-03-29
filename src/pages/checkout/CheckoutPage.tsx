@@ -86,6 +86,20 @@ const CheckoutPage = () => {
     setCouponDiscount(discountAmount);
   };
 
+  // Derive items for product-specific coupon validation
+  const couponItems = useMemo(
+    () =>
+      products.map((p) => ({
+        productId: p.product._id,
+        price:
+          p.variant.salePrice && p.variant.salePrice < p.variant.price
+            ? p.variant.salePrice
+            : p.variant.price,
+        quantity: p.quantity,
+      })),
+    [products],
+  );
+
   const [isError, setIsError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -205,7 +219,11 @@ const CheckoutPage = () => {
             couponDiscount={couponDiscount}
             couponCode={couponCode}
           />
-          <CouponCode onApply={handleCouponApply} />
+          <CouponCode
+            onApply={handleCouponApply}
+            orderTotal={order.sumPrice}
+            items={couponItems}
+          />
           {/* ACTION */}
           <CommonButton
             disable={disable}

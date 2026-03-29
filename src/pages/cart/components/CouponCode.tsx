@@ -1,16 +1,22 @@
 import { useState } from "react";
-import { useI18n } from "../../../contexts/I18nContext";
 import CommonButton from "../../../components/common/CommonButton";
 import { validateCoupon } from "../../../services/api/api.coupon";
-import { useAppSelector } from "../../../redux/store";
+
+interface CouponItem {
+  productId: string;
+  price: number;
+  quantity: number;
+}
 
 const CouponCode = ({
   onApply,
+  orderTotal,
+  items,
 }: {
   onApply: (code: string, discountAmount: number) => void;
+  orderTotal: number;
+  items: CouponItem[];
 }) => {
-  const i18n = useI18n();
-  const totalPrice = useAppSelector((state) => state.cart.totalPrice);
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -24,7 +30,8 @@ const CouponCode = ({
     try {
       const result = await validateCoupon({
         code: code.trim(),
-        orderTotal: totalPrice,
+        orderTotal,
+        items,
       });
       if (result) {
         onApply(code.trim().toUpperCase(), result.discountAmount);
@@ -36,6 +43,8 @@ const CouponCode = ({
       else if (msg === "COUPON_EXPIRED") setError("Coupon has expired");
       else if (msg === "COUPON_USAGE_EXCEEDED")
         setError("Coupon usage limit reached");
+      else if (msg === "COUPON_NO_APPLICABLE_PRODUCTS")
+        setError("This coupon does not apply to any product in your order");
       else if (msg?.startsWith("COUPON_MIN_ORDER")) {
         const min = msg.split(":")[1];
         setError(`Minimum order value: ${Number(min).toLocaleString()}đ`);

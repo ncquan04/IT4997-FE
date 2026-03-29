@@ -7,15 +7,17 @@ const API_PATH = Contacts.API_CONFIG;
 export const validateCoupon = async ({
   code,
   orderTotal,
+  items,
 }: {
   code: string;
   orderTotal: number;
+  items?: { productId: string; price: number; quantity: number }[];
 }): Promise<{ discountAmount: number; couponId: string } | null> => {
   try {
     const response = await apiService.post<{
       discountAmount: number;
       couponId: string;
-    }>(API_PATH.COUPON.VALIDATE.URL, { code, orderTotal });
+    }>(API_PATH.COUPON.VALIDATE.URL, { code, orderTotal, items });
     return response;
   } catch (err: any) {
     throw err;
