@@ -93,6 +93,42 @@ export interface IRepairLogListResponse {
   data: IRepairLogItem[];
 }
 
+// ─── Repair Log History (cross-warranty, grouped by IMEI) ─────────────────────
+
+export interface IRepairLogHistoryItem extends Omit<
+  IRepairLogItem,
+  "warrantyRequestId"
+> {
+  warrantyRequestId:
+    | {
+        _id: string;
+        status: number;
+        branchId: { _id: string; name: string } | string;
+        createdAt?: string;
+        imeiOrSerial: string;
+      }
+    | string;
+}
+
+export interface IRepairLogHistoryResponse {
+  data: IRepairLogHistoryItem[];
+}
+
+// ─── Public repair history (unauthenticated, sanitized) ───────────────────────
+
+export interface IPublicRepairHistoryItem {
+  date: string;
+  action: string;
+  replacedParts: string[];
+  note: string;
+}
+
+export interface IPublicRepairHistoryResponse {
+  found: boolean;
+  imei: string;
+  data: IPublicRepairHistoryItem[];
+}
+
 // ─── Payloads ─────────────────────────────────────────────────────────────────
 
 export interface ICreateWarrantyPayload {

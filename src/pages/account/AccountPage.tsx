@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
 import CommonButton from "../../components/common/CommonButton";
-import { fetchMyWarranties } from "../../services/api/api.warranty";
+import {
+  fetchMyWarranties,
+  fetchPublicRepairHistory,
+} from "../../services/api/api.warranty";
 import { Contacts } from "../../shared/contacts";
-import type { IWarrantyListItem } from "../../types/warranty.types";
+import type {
+  IWarrantyListItem,
+  IPublicRepairHistoryItem,
+} from "../../types/warranty.types";
 
 const WARRANTY_STATUS = Contacts.Status.Warranty;
 
 const WARRANTY_LABELS: Record<number, string> = {
-  [WARRANTY_STATUS.RECEIVED]: "Đã tiếp nhận",
-  [WARRANTY_STATUS.DIAGNOSING]: "Đang chẩn đoán",
-  [WARRANTY_STATUS.REPAIRING]: "Đang sửa chữa",
-  [WARRANTY_STATUS.WAITING_PARTS]: "Chờ linh kiện",
-  [WARRANTY_STATUS.COMPLETED]: "Hoàn tất sửa chữa",
-  [WARRANTY_STATUS.RETURNED]: "Đã trả máy",
+  [WARRANTY_STATUS.RECEIVED]: "Received",
+  [WARRANTY_STATUS.DIAGNOSING]: "Diagnosing",
+  [WARRANTY_STATUS.REPAIRING]: "Repairing",
+  [WARRANTY_STATUS.WAITING_PARTS]: "Waiting for Parts",
+  [WARRANTY_STATUS.COMPLETED]: "Repair Completed",
+  [WARRANTY_STATUS.RETURNED]: "Returned to Customer",
 };
 
 const WARRANTY_STATUS_COLORS: Record<number, string> = {
@@ -24,7 +30,7 @@ const WARRANTY_STATUS_COLORS: Record<number, string> = {
   [WARRANTY_STATUS.RETURNED]: "bg-gray-100 text-gray-600",
 };
 
-type Tab = "profile" | "warranty";
+type Tab = "profile" | "warranty" | "repair-check";
 
 const AccountPage = () => {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
@@ -41,6 +47,29 @@ const AccountPage = () => {
   // Warranty state
   const [warranties, setWarranties] = useState<IWarrantyListItem[]>([]);
   const [warrantyLoading, setWarrantyLoading] = useState(false);
+
+  // Repair check state
+  const [imeiInput, setImeiInput] = useState("");
+  const [repairHistory, setRepairHistory] = useState<
+    IPublicRepairHistoryItem[]
+  >([]);
+  const [repairSearched, setRepairSearched] = useState(false);
+  const [repairFound, setRepairFound] = useState(false);
+  const [repairLoading, setRepairLoading] = useState(false);
+  const [searchedImei, setSearchedImei] = useState("");
+
+  const handleRepairSearch = async () => {
+    const imei = imeiInput.trim();
+    if (!imei) return;
+    setRepairLoading(true);
+    setRepairSearched(false);
+    const res = await fetchPublicRepairHistory(imei);
+    setRepairLoading(false);
+    setRepairSearched(true);
+    setSearchedImei(imei);
+    setRepairFound(res?.found ?? false);
+    setRepairHistory(res?.data ?? []);
+  };
 
   useEffect(() => {
     if (activeTab !== "warranty") return;
@@ -94,6 +123,12 @@ const AccountPage = () => {
                   onClick={() => setActiveTab("warranty")}
                 >
                   Warranty Requests
+                </li>
+                <li
+                  className={`cursor-pointer ${activeTab === "repair-check" ? "text-red-500" : "text-gray-500 hover:text-black"}`}
+                  onClick={() => setActiveTab("repair-check")}
+                >
+                  Repair History Check
                 </li>
               </ul>
             </div>
@@ -223,10 +258,10 @@ const AccountPage = () => {
                 </h2>
 
                 {warrantyLoading ? (
-                  <p className="text-gray-400 text-sm">Đang tải...</p>
+                  <p className="text-gray-400 text-sm">Loading...</p>
                 ) : warranties.length === 0 ? (
                   <p className="text-gray-400 text-sm">
-                    Bạn chưa có yêu cầu bảo hành nào.
+                    You have no warranty requests yet.
                   </p>
                 ) : (
                   <div className="flex flex-col gap-4">
@@ -243,7 +278,7 @@ const AccountPage = () => {
                         WARRANTY_STATUS_COLORS[w.status] ??
                         "bg-gray-100 text-gray-600";
                       const statusLabel =
-                        WARRANTY_LABELS[w.status] ?? `Trạng thái ${w.status}`;
+                        WARRANTY_LABELS[w.status] ?? `Status ${w.status}`;
                       const createdDate = w.createdAt
                         ? new Date(w.createdAt).toLocaleDateString("vi-VN")
                         : "";
@@ -272,20 +307,20 @@ const AccountPage = () => {
                             </span>
                             <span>
                               <span className="font-medium text-gray-700">
-                                Chi nhánh:
+                                Branch:
                               </span>{" "}
                               {branchName}
                             </span>
                             <span>
                               <span className="font-medium text-gray-700">
-                                Mô tả lỗi:
+                                Issue:
                               </span>{" "}
                               {w.issueDescription}
                             </span>
                             {createdDate && (
                               <span>
                                 <span className="font-medium text-gray-700">
-                                  Ngày tiếp nhận:
+                                  Received:
                                 </span>{" "}
                                 {createdDate}
                               </span>
@@ -293,7 +328,7 @@ const AccountPage = () => {
                             {w.estimatedDate && (
                               <span>
                                 <span className="font-medium text-gray-700">
-                                  Dự kiến hoàn thành:
+                                  Estimated completion:
                                 </span>{" "}
                                 {new Date(w.estimatedDate).toLocaleDateString(
                                   "vi-VN",
@@ -305,6 +340,102 @@ const AccountPage = () => {
                       );
                     })}
                   </div>
+                )}
+              </>
+            )}
+
+            {activeTab === "repair-check" && (
+              <>
+                <h2 className="text-xl font-medium text-red-500 mb-2">
+                  Repair History Check
+                </h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Enter the IMEI or Serial Number of a device to view its full
+                  repair and warranty history.
+                </p>
+
+                <div className="flex gap-2 mb-6">
+                  <input
+                    type="text"
+                    value={imeiInput}
+                    onChange={(e) => setImeiInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleRepairSearch()}
+                    placeholder="Enter IMEI or Serial Number..."
+                    className="flex-1 h-[50px] bg-secondary rounded px-4 outline-none text-black placeholder:text-gray-400 text-sm border border-gray-200 focus:border-red-300"
+                  />
+                  <CommonButton
+                    label={repairLoading ? "Searching..." : "Search"}
+                    onClick={handleRepairSearch}
+                    className="!w-[110px] !h-[50px] !text-sm"
+                  />
+                </div>
+
+                {repairLoading && (
+                  <p className="text-sm text-gray-400 text-center py-6">
+                    Searching...
+                  </p>
+                )}
+
+                {!repairLoading && repairSearched && !repairFound && (
+                  <div className="text-center py-8 text-gray-400 text-sm">
+                    No repair history found for IMEI/Serial{" "}
+                    <span className="font-mono font-medium text-gray-600">
+                      {searchedImei}
+                    </span>
+                    .
+                  </div>
+                )}
+
+                {!repairLoading && repairFound && repairHistory.length > 0 && (
+                  <>
+                    <p className="text-xs text-gray-500 mb-4">
+                      Found{" "}
+                      <span className="font-semibold text-gray-700">
+                        {repairHistory.length}
+                      </span>{" "}
+                      repair{repairHistory.length > 1 ? "s" : ""} for{" "}
+                      <span className="font-mono font-medium text-gray-700">
+                        {searchedImei}
+                      </span>
+                    </p>
+                    <ol className="relative border-l-2 border-red-100 space-y-5 ml-2">
+                      {repairHistory.map((item, idx) => (
+                        <li key={idx} className="ml-4">
+                          <span className="absolute -left-[9px] mt-1 w-4 h-4 rounded-full bg-red-400 border-2 border-white" />
+                          <div className="border border-gray-100 rounded-lg p-4 flex flex-col gap-1.5">
+                            <div className="flex items-start justify-between gap-2 flex-wrap">
+                              <span className="text-sm font-semibold text-black">
+                                {item.action}
+                              </span>
+                              <span className="text-xs text-gray-400 whitespace-nowrap">
+                                {new Date(item.date).toLocaleDateString(
+                                  "vi-VN",
+                                  {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  },
+                                )}
+                              </span>
+                            </div>
+                            {item.note && (
+                              <p className="text-sm text-gray-600">
+                                {item.note}
+                              </p>
+                            )}
+                            {item.replacedParts.length > 0 && (
+                              <p className="text-xs text-gray-500">
+                                <span className="font-medium text-gray-700">
+                                  Replaced parts:
+                                </span>{" "}
+                                {item.replacedParts.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </>
                 )}
               </>
             )}

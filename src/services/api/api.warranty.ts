@@ -5,6 +5,8 @@ import type {
   IImeiLookupResponse,
   IImeiStockLookupResponse,
   IRepairLogListResponse,
+  IRepairLogHistoryResponse,
+  IPublicRepairHistoryResponse,
   IUpdateWarrantyStatusPayload,
   IWarrantyDetail,
   IWarrantyListFilters,
@@ -153,6 +155,21 @@ export const lookupImeiFromStock = async (
   }
 };
 
+// ─── Lịch sử sửa chữa toàn bộ theo IMEI/Serial ─—─—───────────────
+export const fetchRepairLogHistory = async (
+  imei: string,
+): Promise<IRepairLogHistoryResponse | null> => {
+  try {
+    const params = new URLSearchParams({ imei });
+    return await apiService.get<IRepairLogHistoryResponse>(
+      `${API_PATH.WARRANTY.REPAIR_LOG_HISTORY.URL}?${params.toString()}`,
+    );
+  } catch (error) {
+    console.log("Fetch repair log history error: ", error);
+    return null;
+  }
+};
+
 // ─── Lịch sử sửa chữa — xem ───────────────────────────────────────────────────
 export const fetchRepairLogs = async (
   warrantyId: string,
@@ -181,5 +198,20 @@ export const addRepairLog = async (
   } catch (error) {
     console.log("Add repair log error: ", error);
     return false;
+  }
+};
+
+// ─── Tra cứu lịch sử sửa chữa công khai theo IMEI (không cần auth) ───────────
+export const fetchPublicRepairHistory = async (
+  imei: string,
+): Promise<IPublicRepairHistoryResponse | null> => {
+  try {
+    const params = new URLSearchParams({ imei });
+    return await apiService.get<IPublicRepairHistoryResponse>(
+      `${API_PATH.WARRANTY.PUBLIC_REPAIR_HISTORY.URL}?${params.toString()}`,
+    );
+  } catch (error) {
+    console.log("Fetch public repair history error: ", error);
+    return null;
   }
 };
