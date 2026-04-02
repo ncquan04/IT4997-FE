@@ -9,6 +9,13 @@ import type {
   IWarrantyListItem,
   IPublicRepairHistoryItem,
 } from "../../types/warranty.types";
+import {
+  getMyMemberInfo,
+  getMyPointHistory,
+  type IMemberInfo,
+  type IPointTransaction,
+} from "../../services/api/api.loyalty";
+import { formatPrice } from "../../utils";
 
 const WARRANTY_STATUS = Contacts.Status.Warranty;
 
@@ -30,7 +37,7 @@ const WARRANTY_STATUS_COLORS: Record<number, string> = {
   [WARRANTY_STATUS.RETURNED]: "bg-gray-100 text-gray-600",
 };
 
-type Tab = "profile" | "warranty" | "repair-check";
+type Tab = "profile" | "warranty" | "repair-check" | "loyalty";
 
 const AccountPage = () => {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
@@ -47,6 +54,11 @@ const AccountPage = () => {
   // Warranty state
   const [warranties, setWarranties] = useState<IWarrantyListItem[]>([]);
   const [warrantyLoading, setWarrantyLoading] = useState(false);
+
+  // Loyalty state
+  const [memberInfo, setMemberInfo] = useState<IMemberInfo | null>(null);
+  const [pointHistory, setPointHistory] = useState<IPointTransaction[]>([]);
+  const [loyaltyLoading, setLoyaltyLoading] = useState(false);
 
   // Repair check state
   const [imeiInput, setImeiInput] = useState("");
@@ -78,6 +90,18 @@ const AccountPage = () => {
       setWarranties(res?.data ?? []);
       setWarrantyLoading(false);
     });
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== "loyalty") return;
+    setLoyaltyLoading(true);
+    Promise.all([getMyMemberInfo(), getMyPointHistory(1, 20)]).then(
+      ([info, history]) => {
+        if (info) setMemberInfo(info);
+        if (history) setPointHistory(history.data);
+        setLoyaltyLoading(false);
+      },
+    );
   }, [activeTab]);
 
   const handleSaveChanges = () => {
@@ -129,6 +153,18 @@ const AccountPage = () => {
                   onClick={() => setActiveTab("repair-check")}
                 >
                   Repair History Check
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <h3 className="font-medium text-base text-black">Loyalty</h3>
+              <ul className="flex flex-col gap-2 pl-9">
+                <li
+                  className={`cursor-pointer ${activeTab === "loyalty" ? "text-red-500" : "text-gray-500 hover:text-black"}`}
+                  onClick={() => setActiveTab("loyalty")}
+                >
+                  Membership & Points
                 </li>
               </ul>
             </div>
@@ -435,6 +471,155 @@ const AccountPage = () => {
                         </li>
                       ))}
                     </ol>
+                  </>
+                )}
+              </>
+            )}
+
+            {activeTab === "loyalty" && (
+              <>
+                <h2 className="text-xl font-medium text-red-500 mb-6">
+                  Membership & Points
+                </h2>
+
+                {loyaltyLoading ? (
+                  <p className="text-sm text-gray-400">Loading...</p>
+                ) : (
+                  <>
+                    {/* TIER CARD */}
+                    {memberInfo && (
+                      <div className="rounded-xl border border-gray-100 bg-linear-to-r from-gray-50 to-white p-5 mb-6 flex flex-col gap-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div>
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-0.5">
+                              Hạng thành viên
+                            </p>
+                            <p className="text-2xl font-bold text-black">
+                              {memberInfo.memberTier === "S_NEW"
+                                ? "S-New"
+                                : memberInfo.memberTier === "S_MEM"
+                                  ? "S-Mem"
+                                  : "S-Class"}
+                            </p>
+                          </div>
+                          {memberInfo.discountPercent > 0 && (
+                            <span className="bg-red-50 text-red-500 text-sm font-semibold px-3 py-1 rounded-full">
+                              -{memberInfo.discountPercent}% mỗi đơn
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row gap-4 text-sm">
+                          <div className="flex-1 bg-white rounded-lg border border-gray-100 p-3">
+                            <p className="text-gray-400 text-xs mb-1">
+                              Điểm khả dụng
+                            </p>
+                            <p className="text-xl font-bold text-black">
+                              {memberInfo.loyaltyPoints.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              = {formatPrice(memberInfo.loyaltyPoints)} khi đổi
+                            </p>
+                          </div>
+                          <div className="flex-1 bg-white rounded-lg border border-gray-100 p-3">
+                            <p className="text-gray-400 text-xs mb-1">
+                              Chi tiêu kỳ này
+                            </p>
+                            <p className="text-lg font-semibold text-black">
+                              {formatPrice(memberInfo.spentInWindow)}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              Kỳ kết thúc{" "}
+                              {new Date(
+                                memberInfo.windowEndsAt,
+                              ).toLocaleDateString("vi-VN")}
+                            </p>
+                          </div>
+                        </div>
+
+                        {memberInfo.nextTier && (
+                          <div className="text-xs text-gray-500 bg-yellow-50 border border-yellow-100 rounded-lg px-3 py-2">
+                            Còn{" "}
+                            <span className="font-semibold text-yellow-700">
+                              {formatPrice(memberInfo.nextTier.remaining)}
+                            </span>{" "}
+                            để lên hạng{" "}
+                            <span className="font-semibold">
+                              {memberInfo.nextTier.tier === "S_MEM"
+                                ? "S-Mem"
+                                : "S-Class"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* POINT HISTORY */}
+                    <h3 className="font-medium text-black mb-3">
+                      Lịch sử điểm
+                    </h3>
+                    {pointHistory.length === 0 ? (
+                      <p className="text-sm text-gray-400">
+                        Chưa có giao dịch điểm nào.
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {pointHistory.map((tx) => {
+                          const isEarn = tx.type === "EARN";
+                          const isRedeem = tx.type === "REDEEM";
+                          const sign = tx.points > 0 ? "+" : "";
+                          const color = isEarn
+                            ? "text-green-600"
+                            : isRedeem
+                              ? "text-red-500"
+                              : "text-gray-400";
+                          const label =
+                            tx.type === "EARN"
+                              ? "Tích điểm"
+                              : tx.type === "REDEEM"
+                                ? "Đổi điểm"
+                                : "Hết hạn";
+
+                          return (
+                            <div
+                              key={tx._id}
+                              className="flex items-center justify-between border border-gray-100 rounded-lg px-4 py-3 text-sm"
+                            >
+                              <div className="flex flex-col gap-0.5">
+                                <span className="font-medium text-black">
+                                  {label}
+                                </span>
+                                {tx.note && (
+                                  <span className="text-xs text-gray-400">
+                                    {tx.note}
+                                  </span>
+                                )}
+                                <span className="text-xs text-gray-400">
+                                  {new Date(tx.createdAt).toLocaleDateString(
+                                    "vi-VN",
+                                  )}
+                                  {isEarn && tx.expiresAt && (
+                                    <>
+                                      {" "}
+                                      · HH{" "}
+                                      {new Date(
+                                        tx.expiresAt,
+                                      ).toLocaleDateString("vi-VN")}
+                                    </>
+                                  )}
+                                </span>
+                              </div>
+                              <span
+                                className={`font-semibold text-base ${color}`}
+                              >
+                                {sign}
+                                {tx.points.toLocaleString()} điểm
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </>
                 )}
               </>

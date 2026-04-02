@@ -27,6 +27,10 @@ import {
   sortBranchesByDistance,
 } from "../../utils/geo";
 import CouponCode from "../cart/components/CouponCode";
+import {
+  getMyMemberInfo,
+  type IMemberInfo,
+} from "../../services/api/api.loyalty";
 
 interface CheckoutState {
   products: {
@@ -80,6 +84,46 @@ const CheckoutPage = () => {
 
   const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
+
+  // ── Loyalty ────────────────────────────────────────────────────────────────
+  const [memberInfo, setMemberInfo] = useState<IMemberInfo | null>(null);
+  const [pointsInput, setPointsInput] = useState<string>("");
+  const [pointsToRedeem, setPointsToRedeem] = useState(0);
+  const [memberDiscount, setMemberDiscount] = useState(0);
+
+  useEffect(() => {
+    getMyMemberInfo().then((info) => {
+      if (info) setMemberInfo(info);
+    });
+  }, []);
+
+  // Tính member discount realtime khi subtotal hoặc couponDiscount thay đổi
+  useEffect(() => {
+    if (!memberInfo || memberInfo.discountPercent === 0) {
+      setMemberDiscount(0);
+      return;
+    }
+    const base = order.sumPrice - couponDiscount;
+    setMemberDiscount(
+      Math.floor((Math.max(0, base) * memberInfo.discountPercent) / 100),
+    );
+  }, [memberInfo, order.sumPrice, couponDiscount]);
+
+  const maxRedeemable = useMemo(() => {
+    if (!memberInfo) return 0;
+    const base = order.sumPrice - couponDiscount - memberDiscount;
+    return Math.min(memberInfo.loyaltyPoints, Math.max(0, base));
+  }, [memberInfo, order.sumPrice, couponDiscount, memberDiscount]);
+
+  const handlePointsInputChange = (val: string) => {
+    setPointsInput(val);
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed) && parsed >= 0) {
+      setPointsToRedeem(Math.min(parsed, maxRedeemable));
+    } else {
+      setPointsToRedeem(0);
+    }
+  };
 
   const handleCouponApply = (code: string, discountAmount: number) => {
     setCouponCode(code);
@@ -179,6 +223,7 @@ const CheckoutPage = () => {
         orderId: newOrder._id,
         method: order.method,
         couponCode: couponCode || undefined,
+        points: pointsToRedeem > 0 ? pointsToRedeem : undefined,
       });
       if (!newPayment) {
         throw new Error("create payment error");
@@ -219,12 +264,43 @@ const CheckoutPage = () => {
           <OrderSummary
             couponDiscount={couponDiscount}
             couponCode={couponCode}
+            memberDiscount={memberDiscount}
+            memberTier={memberInfo?.memberTier}
+            discountPercent={memberInfo?.discountPercent ?? 0}
+            pointsDiscount={pointsToRedeem}
           />
           <CouponCode
             onApply={handleCouponApply}
             orderTotal={order.sumPrice}
             items={couponItems}
           />
+
+          {/* LOYALTY POINTS */}
+          {memberInfo && memberInfo.loyaltyPoints > 0 && (
+            <div className="border rounded-lg p-4 space-y-2 text-sm">
+              <p className="font-medium">
+                Điểm tích lũy ({memberInfo.loyaltyPoints.toLocaleString()} điểm
+                khả dụng)
+              </p>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="number"
+                  min={0}
+                  max={maxRedeemable}
+                  value={pointsInput}
+                  onChange={(e) => handlePointsInputChange(e.target.value)}
+                  placeholder={`Tối đa ${maxRedeemable.toLocaleString()}`}
+                  className="border rounded px-3 py-1.5 w-full focus:outline-none focus:ring-1 focus:ring-black"
+                />
+              </div>
+              {pointsToRedeem > 0 && (
+                <p className="text-green-600">
+                  Giảm {pointsToRedeem.toLocaleString()}đ từ điểm
+                </p>
+              )}
+            </div>
+          )}
+
           {/* ACTION */}
           <CommonButton
             disable={disable}

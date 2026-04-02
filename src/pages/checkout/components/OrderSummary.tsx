@@ -16,12 +16,26 @@ const bankOptionsImg = [bank1, bank2, bank3, bank4];
 
 const PAYMENT_METHOD = Contacts.PaymentMethod;
 
+const TIER_LABELS: Record<string, string> = {
+  S_NEW: "S-New",
+  S_MEM: "S-Mem",
+  S_CLASS: "S-Class",
+};
+
 const OrderSummary = ({
   couponDiscount = 0,
   couponCode = "",
+  memberDiscount = 0,
+  memberTier,
+  discountPercent = 0,
+  pointsDiscount = 0,
 }: {
   couponDiscount?: number;
   couponCode?: string;
+  memberDiscount?: number;
+  memberTier?: string;
+  discountPercent?: number;
+  pointsDiscount?: number;
 }) => {
   const dispatch = useAppDispatch();
   const method = useAppSelector(
@@ -143,9 +157,33 @@ const OrderSummary = ({
           </div>
         )}
 
+        {memberDiscount > 0 && memberTier && (
+          <div className="flex justify-between text-green-600">
+            <span>
+              Thành viên {TIER_LABELS[memberTier] ?? memberTier} (
+              {discountPercent}%)
+            </span>
+            <span>-{formatPrice(memberDiscount)}</span>
+          </div>
+        )}
+
+        {pointsDiscount > 0 && (
+          <div className="flex justify-between text-green-600">
+            <span>Điểm tích lũy ({pointsDiscount.toLocaleString()} điểm)</span>
+            <span>-{formatPrice(pointsDiscount)}</span>
+          </div>
+        )}
+
         <div className="flex justify-between font-semibold text-base border-t pt-3">
           <span>Total</span>
-          <span>{formatPrice(Math.max(0, subtotal - couponDiscount))}</span>
+          <span>
+            {formatPrice(
+              Math.max(
+                0,
+                subtotal - couponDiscount - memberDiscount - pointsDiscount,
+              ),
+            )}
+          </span>
         </div>
       </div>
 

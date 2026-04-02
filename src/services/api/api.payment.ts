@@ -10,16 +10,19 @@ export const createPayment = async ({
   orderId,
   method,
   couponCode,
+  points,
 }: {
   orderId: string;
   method: (typeof PAYMENT_METHOD)[keyof typeof PAYMENT_METHOD];
   couponCode?: string;
+  points?: number;
 }) => {
   try {
     const params = new URLSearchParams();
     params.append("method", method);
     params.append("order", orderId);
     if (couponCode) params.append("coupon", couponCode);
+    if (points && points > 0) params.append("points", String(points));
     const response = await apiService.post<string>(
       API_PATH.PAYMENT.CREATE.URL + "?" + params.toString(),
     );
