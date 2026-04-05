@@ -29,6 +29,7 @@ import WarrantyManagementPage from "../pages/admin/WarrantyManagementPage";
 import CouponManagementPage from "../pages/admin/CouponManagementPage";
 import DiscountProgramManagementPage from "../pages/admin/DiscountProgramManagementPage";
 import LoyaltyManagementPage from "../pages/admin/LoyaltyManagementPage";
+import FinancialReportPage from "../pages/admin/FinancialReportPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { UserRole } from "../shared/models/user-model";
@@ -62,6 +63,7 @@ export const AppRoutes = {
   ADMIN_COUPONS: "/admin/coupons",
   ADMIN_DISCOUNT_PROGRAMS: "/admin/discount-programs",
   ADMIN_LOYALTY: "/admin/loyalty",
+  ADMIN_FINANCIAL_REPORT: "/admin/financial-report",
 };
 
 const STAFF_ROLES = new Set<UserRole>([
@@ -304,6 +306,14 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <LoyaltyManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_FINANCIAL_REPORT}
+            element={
+              <AdminLayout>
+                <FinancialReportPage />
               </AdminLayout>
             }
           />
