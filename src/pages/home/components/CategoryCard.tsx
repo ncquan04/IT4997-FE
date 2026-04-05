@@ -28,10 +28,7 @@ const CategoryCard = ({ category }: { category: Category }) => {
   })();
 
   const handleCardClick = () => {
-    navigate({
-      pathname: "/search",
-      search: `?categoryId=${category._id}`,
-    });
+    navigate(`/categories/${category._id}`);
   };
 
   return (

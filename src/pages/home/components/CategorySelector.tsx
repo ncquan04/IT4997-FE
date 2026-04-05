@@ -15,10 +15,7 @@ const CategorySelector = (props: CategorySelectorProps) => {
   const navigate = useNavigate();
 
   const handleSelectCategory = (category: Category) => {
-    navigate({
-      pathname: "/search",
-      search: `?categoryId=${category._id}`,
-    });
+    navigate(`/categories/${category._id}`);
   };
 
   const handleDropdownToggle = () => {
@@ -32,7 +29,7 @@ const CategorySelector = (props: CategorySelectorProps) => {
   };
 
   const parentCategories = props.categories.filter((c) => !c.parentCategoryId);
-  const getChildren = (parentId: string) => 
+  const getChildren = (parentId: string) =>
     props.categories.filter((c) => c.parentCategoryId === parentId);
 
   return (
@@ -58,14 +55,19 @@ const CategorySelector = (props: CategorySelectorProps) => {
 
         <div
           className={`absolute top-full mt-1 left-0 w-full bg-white shadow-lg rounded-md overflow-hidden transition-all duration-300 ease-in-out z-50 border border-gray-100 ${
-            isOpen ? "max-h-128 opacity-100 overflow-y-auto" : "max-h-0 opacity-0 border-transparent"
+            isOpen
+              ? "max-h-128 opacity-100 overflow-y-auto"
+              : "max-h-0 opacity-0 border-transparent"
           }`}
         >
           <ul className="list-none p-0 m-0">
             {parentCategories.map((category, index) => {
               const children = getChildren(category._id);
               return (
-                <li key={index} className="flex flex-col border-b border-gray-100 last:border-b-0">
+                <li
+                  key={index}
+                  className="flex flex-col border-b border-gray-100 last:border-b-0"
+                >
                   <button
                     onClick={() => handleCategoryClick(category)}
                     className="w-full px-4 py-3 text-sm md:text-base text-black font-semibold hover:bg-gray-50 bg-transparent border-0 text-left transition-colors duration-150 flex items-center justify-between"
@@ -114,7 +116,10 @@ const CategorySelector = (props: CategorySelectorProps) => {
                 )}
               </div>
 
-              <CategoryDropdown categories={children} onSelectCategory={handleSelectCategory} />
+              <CategoryDropdown
+                categories={children}
+                onSelectCategory={handleSelectCategory}
+              />
             </li>
           );
         })}
