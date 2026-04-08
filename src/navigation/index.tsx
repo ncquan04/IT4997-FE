@@ -30,6 +30,9 @@ import CouponManagementPage from "../pages/admin/CouponManagementPage";
 import DiscountProgramManagementPage from "../pages/admin/DiscountProgramManagementPage";
 import LoyaltyManagementPage from "../pages/admin/LoyaltyManagementPage";
 import FinancialReportPage from "../pages/admin/FinancialReportPage";
+import EmployeeManagementPage from "../pages/admin/EmployeeManagementPage";
+import AttendanceManagementPage from "../pages/admin/AttendanceManagementPage";
+import PayrollManagementPage from "../pages/admin/PayrollManagementPage";
 import CategoryPage from "../pages/category/CategoryPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -65,6 +68,9 @@ export const AppRoutes = {
   ADMIN_DISCOUNT_PROGRAMS: "/admin/discount-programs",
   ADMIN_LOYALTY: "/admin/loyalty",
   ADMIN_FINANCIAL_REPORT: "/admin/financial-report",
+  ADMIN_EMPLOYEES: "/admin/employees",
+  ADMIN_ATTENDANCE: "/admin/attendance",
+  ADMIN_PAYROLL: "/admin/payroll",
   CATEGORY: "/categories/:categoryId",
 };
 
@@ -324,6 +330,30 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <FinancialReportPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_EMPLOYEES}
+            element={
+              <AdminLayout>
+                <EmployeeManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_ATTENDANCE}
+            element={
+              <AdminLayout>
+                <AttendanceManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_PAYROLL}
+            element={
+              <AdminLayout>
+                <PayrollManagementPage />
               </AdminLayout>
             }
           />
