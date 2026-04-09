@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { UserRole } from "../../shared/models/user-model";
@@ -247,20 +247,25 @@ const PayrollManagementPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Payroll Management
-          </h1>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Payroll Management
+            </h1>
+            <p className="text-gray-500 mt-1">
+              Generate and manage monthly employee payrolls.
+            </p>
+          </div>
           <button
             onClick={() => setShowGenerateModal(true)}
-            className="px-4 py-2 bg-button2 text-white rounded-lg text-sm hover:opacity-90"
+            className="px-4 py-2 bg-button2 text-white rounded-lg text-sm hover:opacity-90 whitespace-nowrap"
           >
             Generate Payroll
           </button>
         </div>
 
         {/* Bộ lọc */}
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6 flex flex-wrap gap-3 items-end">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Month
@@ -316,16 +321,20 @@ const PayrollManagementPage = () => {
 
         {/* Tổng chi lương */}
         {records.length > 0 && (
-          <div className="bg-white rounded-xl border shadow-sm p-4 mb-4 flex items-center gap-6">
-            <div>
-              <div className="text-xs text-gray-500">Total Employees</div>
-              <div className="text-xl font-bold text-gray-800">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-6">
+            <div className="bg-white rounded-xl border shadow-sm p-4">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Total Employees
+              </div>
+              <div className="text-2xl font-bold text-gray-800">
                 {records.length}
               </div>
             </div>
-            <div>
-              <div className="text-xs text-gray-500">Total Net Salary</div>
-              <div className="text-xl font-bold text-button2">
+            <div className="bg-white rounded-xl border shadow-sm p-4">
+              <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+                Total Net Salary
+              </div>
+              <div className="text-2xl font-bold text-button2">
                 {formatCurrency(totalActual)}
               </div>
             </div>
@@ -373,7 +382,12 @@ const PayrollManagementPage = () => {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r._id} className="border-b hover:bg-gray-50">
+                  <motion.tr
+                    key={r._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="border-b hover:bg-gray-50 transition-colors group"
+                  >
                     <td className="px-4 py-3 font-medium text-gray-800">
                       {getEmployeeName(r.employeeId)}
                     </td>
@@ -401,30 +415,61 @@ const PayrollManagementPage = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {r.status === PayrollStatus.DRAFT && (
-                        <button
-                          onClick={() =>
-                            handleStatusChange(r._id, PayrollStatus.CONFIRMED)
-                          }
-                          disabled={updatingId === r._id}
-                          className="text-blue-600 hover:underline text-xs mr-2"
-                        >
-                          Confirm
-                        </button>
-                      )}
-                      {r.status === PayrollStatus.CONFIRMED && (
-                        <button
-                          onClick={() =>
-                            handleStatusChange(r._id, PayrollStatus.PAID)
-                          }
-                          disabled={updatingId === r._id}
-                          className="text-green-600 hover:underline text-xs"
-                        >
-                          Mark as Paid
-                        </button>
-                      )}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {r.status === PayrollStatus.DRAFT && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(r._id, PayrollStatus.CONFIRMED)
+                            }
+                            disabled={updatingId === r._id}
+                            title="Confirm payroll"
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            {/* check icon */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </button>
+                        )}
+                        {r.status === PayrollStatus.CONFIRMED && (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(r._id, PayrollStatus.PAID)
+                            }
+                            disabled={updatingId === r._id}
+                            title="Mark as Paid"
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            {/* circle-check icon */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                              <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
@@ -432,18 +477,20 @@ const PayrollManagementPage = () => {
         </div>
       </div>
 
-      {showGenerateModal && (
-        <GenerateModal
-          branches={branches}
-          isAdmin={isAdmin}
-          currentBranchId={user?.branchId ?? ""}
-          onClose={() => setShowGenerateModal(false)}
-          onGenerated={() => {
-            setShowGenerateModal(false);
-            loadData();
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {showGenerateModal && (
+          <GenerateModal
+            branches={branches}
+            isAdmin={isAdmin}
+            currentBranchId={user?.branchId ?? ""}
+            onClose={() => setShowGenerateModal(false)}
+            onGenerated={() => {
+              setShowGenerateModal(false);
+              loadData();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
