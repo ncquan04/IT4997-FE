@@ -29,6 +29,7 @@ const formatTime = (ts?: number) => {
   return new Date(ts).toLocaleTimeString("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
   });
 };
 
@@ -151,12 +152,29 @@ const UpsertModal = ({
             <select
               className="w-full border rounded-lg px-3 py-2 text-sm"
               value={form.status}
-              onChange={(e) =>
+              onChange={(e) => {
+                const newStatus = e.target.value as AttendanceStatus;
+                const hasTime =
+                  newStatus === AttendanceStatus.PRESENT ||
+                  newStatus === AttendanceStatus.LATE ||
+                  newStatus === AttendanceStatus.HALF_DAY;
                 setForm((f) => ({
                   ...f,
-                  status: e.target.value as AttendanceStatus,
-                }))
-              }
+                  status: newStatus,
+                  checkInTime: hasTime
+                    ? f.checkInTime ||
+                      (record?.checkInTime
+                        ? new Date(record.checkInTime).toTimeString().slice(0, 5)
+                        : "")
+                    : "",
+                  checkOutTime: hasTime
+                    ? f.checkOutTime ||
+                      (record?.checkOutTime
+                        ? new Date(record.checkOutTime).toTimeString().slice(0, 5)
+                        : "")
+                    : "",
+                }));
+              }}
             >
               {Object.entries(STATUS_META).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -246,6 +264,9 @@ const AttendanceManagementPage = () => {
     IAttendanceRecord | undefined
   >(undefined);
 
+  const PAGE_SIZE = 20;
+  const [currentPage, setCurrentPage] = useState(1);
+
   const loadBranchesAndEmployees = useCallback(async () => {
     const [branchList, empList] = await Promise.all([
       isAdmin ? fetchBranches() : Promise.resolve([]),
@@ -264,6 +285,7 @@ const AttendanceManagementPage = () => {
       employeeId: filterEmployee || undefined,
     });
     setRecords(data);
+    setCurrentPage(1);
     setIsLoading(false);
   }, [month, year, filterBranch, filterEmployee]);
 
@@ -285,6 +307,9 @@ const AttendanceManagementPage = () => {
 
   const branchIdForModal = filterBranch || user?.branchId || "";
 
+  const totalPages = Math.max(1, Math.ceil(records.length / PAGE_SIZE));
+  const pagedRecords = records.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -304,13 +329,13 @@ const AttendanceManagementPage = () => {
         </div>
 
         {/* Bộ lọc */}
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-wrap gap-3 items-end">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Month
             </label>
             <select
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
@@ -326,7 +351,7 @@ const AttendanceManagementPage = () => {
               Year
             </label>
             <select
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
@@ -343,7 +368,7 @@ const AttendanceManagementPage = () => {
                 Branch
               </label>
               <select
-                className="border rounded-lg px-3 py-2 text-sm"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 value={filterBranch}
                 onChange={(e) => setFilterBranch(e.target.value)}
               >
@@ -361,7 +386,7 @@ const AttendanceManagementPage = () => {
               Employee
             </label>
             <select
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={filterEmployee}
               onChange={(e) => setFilterEmployee(e.target.value)}
             >
@@ -380,7 +405,7 @@ const AttendanceManagementPage = () => {
           {Object.entries(STATUS_META).map(([k, v]) => (
             <div
               key={k}
-              className="bg-white rounded-xl border shadow-sm p-3 text-center"
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 text-center"
             >
               <div className="text-2xl font-bold text-gray-800">
                 {summary[k] ?? 0}
@@ -395,7 +420,7 @@ const AttendanceManagementPage = () => {
         </div>
 
         {/* Bảng */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {isLoading ? (
             <div className="p-12 text-center text-gray-500">Loading...</div>
           ) : records.length === 0 ? (
@@ -404,7 +429,7 @@ const AttendanceManagementPage = () => {
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">
                     Employee
@@ -431,8 +456,8 @@ const AttendanceManagementPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {records.map((r) => (
-                  <tr key={r._id} className="border-b hover:bg-gray-50">
+                {pagedRecords.map((r) => (
+                  <tr key={r._id} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-800">
                       {typeof r.employeeId === "object"
                         ? r.employeeId?.userName
@@ -464,15 +489,42 @@ const AttendanceManagementPage = () => {
                           setEditingRecord(r);
                           setShowModal(true);
                         }}
-                        className="text-blue-600 hover:underline text-xs"
+                        title="Edit"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                       >
-                        Edit
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-3 py-4 border-t border-gray-100">
+              <button
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} / {totalPages}
+              </span>
+              <button
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                className="px-3 py-1.5 rounded-lg text-sm border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+              >
+                Next
+              </button>
+            </div>
           )}
         </div>
       </div>

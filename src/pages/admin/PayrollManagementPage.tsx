@@ -247,31 +247,26 @@ const PayrollManagementPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-              Payroll Management
-            </h1>
-            <p className="text-gray-500 mt-1">
-              Generate and manage monthly employee payrolls.
-            </p>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Payroll Management
+          </h1>
           <button
             onClick={() => setShowGenerateModal(true)}
             className="px-4 py-2 bg-button2 text-white rounded-lg text-sm hover:opacity-90 whitespace-nowrap"
           >
-            Generate Payroll
+            + Generate Payroll
           </button>
         </div>
 
         {/* Bộ lọc */}
-        <div className="bg-white rounded-xl shadow-sm border p-4 mb-6 flex flex-wrap gap-3 items-end">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-wrap gap-3 items-end">
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
               Month
             </label>
             <select
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
@@ -287,7 +282,7 @@ const PayrollManagementPage = () => {
               Year
             </label>
             <select
-              className="border rounded-lg px-3 py-2 text-sm"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
@@ -304,7 +299,7 @@ const PayrollManagementPage = () => {
                 Branch
               </label>
               <select
-                className="border rounded-lg px-3 py-2 text-sm"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 value={filterBranch}
                 onChange={(e) => setFilterBranch(e.target.value)}
               >
@@ -320,9 +315,8 @@ const PayrollManagementPage = () => {
         </div>
 
         {/* Tổng chi lương */}
-        {records.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-xl border shadow-sm p-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mb-4">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                 Total Employees
               </div>
@@ -330,7 +324,7 @@ const PayrollManagementPage = () => {
                 {records.length}
               </div>
             </div>
-            <div className="bg-white rounded-xl border shadow-sm p-4">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
               <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
                 Total Net Salary
               </div>
@@ -339,10 +333,9 @@ const PayrollManagementPage = () => {
               </div>
             </div>
           </div>
-        )}
 
         {/* Bảng lương */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {isLoading ? (
             <div className="p-12 text-center text-gray-500">Loading...</div>
           ) : records.length === 0 ? (
@@ -351,7 +344,7 @@ const PayrollManagementPage = () => {
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium text-gray-600">
                     Employee
@@ -386,7 +379,7 @@ const PayrollManagementPage = () => {
                     key={r._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="border-b hover:bg-gray-50 transition-colors group"
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors group"
                   >
                     <td className="px-4 py-3 font-medium text-gray-800">
                       {getEmployeeName(r.employeeId)}
