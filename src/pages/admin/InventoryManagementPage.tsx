@@ -1,149 +1,83 @@
-import { useEffect, useState } from "react";
+﻿import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import InventoryTable from "../../components/admin/InventoryTable";
 import { fetchBranches } from "../../services/api/api.branches";
-import { fetchInventoryList } from "../../services/api/api.inventory";
 import { fetchSuppliers } from "../../services/api/api.suppliers";
 import { createStockImport } from "../../services/api/api.stock-import";
 import { fetchProductById } from "../../services/api/api.products";
 import { SearchProducts } from "../../services/api/api.search";
 import StockImportForm from "../../components/admin/StockImportForm";
-import type { IBranch } from "../../shared/models/branch-model";
 import type { ISupplier } from "../../shared/models/supplier-model";
-import type { IInventoryItem } from "../../types/inventory.types";
 import type {
   ICreateStockImportPayload,
   IStockImportProductSearchOption,
 } from "../../types/stock-import.types";
 import { useToast } from "../../contexts/ToastContext";
-
-const PAGE_SIZE = 20;
+import { useInventoryData } from "./inventory/hooks/useInventoryData";
 
 const InventoryManagementPage = () => {
   const { showToast } = useToast();
-  const [items, setItems] = useState<IInventoryItem[]>([]);
-  const [branches, setBranches] = useState<IBranch[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const {
+    items,
+    branches,
+    isLoading,
+    currentPage,
+    totalPages,
+    selectedBranchId,
+    setSelectedBranchId,
+    searchInput,
+    setSearchInput,
+    loadInventory,
+  } = useInventoryData();
 
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-  const [searchInput, setSearchInput] = useState("");
-  const [searchKeyword, setSearchKeyword] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [suppliers, setSuppliers] = useState<ISupplier[]>([]);
 
-  const loadBranches = async () => {
-    const branchData = await fetchBranches();
-    setBranches(branchData);
-  };
-
-  const loadSuppliers = async () => {
-    const supplierData = await fetchSuppliers();
-    setSuppliers(supplierData);
+  const handleOpenCreateForm = async () => {
+    setIsFormOpen(true);
+    if (suppliers.length === 0) {
+      const data = await fetchSuppliers();
+      setSuppliers(data);
+    }
   };
 
   const searchProductsForStockImport = async (
     keyword: string,
   ): Promise<IStockImportProductSearchOption[]> => {
     const trimmedKeyword = keyword.trim();
-    if (trimmedKeyword.length < 2) {
-      return [];
-    }
-
-    const response = await SearchProducts({
-      userInput: trimmedKeyword,
-      page: 1,
-    });
-
-    if (!response) {
-      return [];
-    }
-
+    if (trimmedKeyword.length < 2) return [];
+    const response = await SearchProducts({ userInput: trimmedKeyword, page: 1 });
+    if (!response) return [];
     const deduplicated = new Map<string, IStockImportProductSearchOption>();
     const loweredKeyword = trimmedKeyword.toLowerCase();
-
     response.products.forEach((product) => {
       const allSkus = (product.variants ?? [])
         .map((variant) => variant.sku)
         .filter((sku): sku is string => Boolean(sku));
-
       const matchedSkus = allSkus.filter((sku) =>
         sku.toLowerCase().includes(loweredKeyword),
       );
-
       deduplicated.set(product._id, {
         productId: product._id,
         title: product.title,
         skuHints: matchedSkus.slice(0, 3),
       });
     });
-
     return Array.from(deduplicated.values());
-  };
-
-  const loadProductDetailForStockImport = async (productId: string) => {
-    return await fetchProductById(productId);
-  };
-
-  const loadInventory = async (page = 1) => {
-    setIsLoading(true);
-    const response = await fetchInventoryList({
-      search: searchKeyword || undefined,
-      branchId: selectedBranchId || undefined,
-      page,
-      limit: PAGE_SIZE,
-    });
-    setIsLoading(false);
-
-    if (!response) {
-      showToast("Failed to load inventory", "error");
-      return;
-    }
-
-    setItems(response.items ?? []);
-    setCurrentPage(response.pagination?.page ?? 1);
-    setTotalPages(response.pagination?.totalPages ?? 1);
-  };
-
-  useEffect(() => {
-    loadBranches();
-  }, []);
-
-  const handleOpenCreateForm = async () => {
-    setIsFormOpen(true);
-
-    if (suppliers.length === 0) {
-      await loadSuppliers();
-    }
   };
 
   const handleCreateStockImport = async (
     payload: ICreateStockImportPayload,
   ): Promise<boolean> => {
     const success = await createStockImport(payload);
-
     if (!success) {
       showToast("Failed to create stock import", "error");
       return false;
     }
-
     showToast("Stock import created successfully", "success");
     loadInventory(1);
     return true;
   };
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setSearchKeyword(searchInput.trim());
-    }, 350);
-
-    return () => clearTimeout(timeout);
-  }, [searchInput]);
-
-  useEffect(() => {
-    loadInventory(1);
-  }, [selectedBranchId, searchKeyword]);
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">
@@ -157,24 +91,13 @@ const InventoryManagementPage = () => {
               Track inventory quantity by branch and product variant.
             </p>
           </div>
-
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleOpenCreateForm}
             className="flex items-center justify-center gap-2 bg-button2 hover:bg-hoverButton text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-200 transition-all"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -185,9 +108,7 @@ const InventoryManagementPage = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                Search
-              </label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Search</label>
               <input
                 type="text"
                 value={searchInput}
@@ -196,11 +117,8 @@ const InventoryManagementPage = () => {
                 className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200"
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                Branch
-              </label>
+              <label className="block text-sm font-medium text-gray-600 mb-2">Branch</label>
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
@@ -208,9 +126,7 @@ const InventoryManagementPage = () => {
               >
                 <option value="">All branches</option>
                 {branches.map((branch) => (
-                  <option key={branch._id} value={branch._id}>
-                    {branch.name}
-                  </option>
+                  <option key={branch._id} value={branch._id}>{branch.name}</option>
                 ))}
               </select>
             </div>
@@ -248,7 +164,7 @@ const InventoryManagementPage = () => {
                   branches={branches}
                   suppliers={suppliers}
                   onSearchProducts={searchProductsForStockImport}
-                  onLoadProductDetail={loadProductDetailForStockImport}
+                  onLoadProductDetail={fetchProductById}
                   onSubmit={handleCreateStockImport}
                   onCancel={() => setIsFormOpen(false)}
                 />

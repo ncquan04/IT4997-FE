@@ -91,6 +91,27 @@ export interface RefundSummary {
   refundCount: number;
 }
 
+export interface PayrollCostSummary {
+  totalBaseSalary: number;
+  totalAllowances: number;
+  totalDeductions: number;
+  totalActualSalary: number;
+  employeeCount: number;
+}
+
+export interface PayrollCostBranchItem {
+  _id: string;
+  branchName: string;
+  totalActualSalary: number;
+  employeeCount: number;
+}
+
+export interface PayrollCostTimeItem {
+  _id: string; // "YYYY-MM"
+  totalActualSalary: number;
+  employeeCount: number;
+}
+
 export interface LoyaltySummary {
   byType: { _id: string; totalPoints: number; transactionCount: number }[];
   overTime: { _id: string; pointsEarned: number; count: number }[];
@@ -168,4 +189,18 @@ export const financialReportApi = {
     params: FinancialReportParams = {},
   ): Promise<LoyaltySummary> =>
     apiService.get(`${BASE}/loyalty-summary`, { params: toParams(params) }),
+
+  getPayrollCost: async (params: FinancialReportParams & {
+    month?: number;
+    year?: number;
+  } = {}): Promise<{
+    summary: PayrollCostSummary;
+    byBranch: PayrollCostBranchItem[];
+    overTime: PayrollCostTimeItem[];
+  }> => {
+    const p: Record<string, string> = { ...toParams(params) };
+    if (params.month !== undefined) p.month = String(params.month);
+    if (params.year !== undefined) p.year = String(params.year);
+    return apiService.get(`${BASE}/payroll-cost`, { params: p });
+  },
 };
