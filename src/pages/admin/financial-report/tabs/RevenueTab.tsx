@@ -17,6 +17,7 @@ import type {
   RevenueTimeItem,
   RevenueBranchItem,
   PayrollCostSummary,
+  RentCostSummary,
 } from "../../../../services/api/api.financial-report";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { UserRole } from "../../../../shared/models/user-model";
@@ -30,6 +31,7 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
   const [timeData, setTimeData] = useState<RevenueTimeItem[]>([]);
   const [branchData, setBranchData] = useState<RevenueBranchItem[]>([]);
   const [payrollSummary, setPayrollSummary] = useState<PayrollCostSummary | null>(null);
+  const [rentSummary, setRentSummary] = useState<RentCostSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
     const calls: Promise<unknown>[] = [
       financialReportApi.getRevenueOverTime(params).then((r) => setTimeData(r.data)),
       financialReportApi.getPayrollCost(params).then((r) => setPayrollSummary(r.summary)),
+      financialReportApi.getRentCost().then((r) => setRentSummary(r.summary)),
     ];
     if (isAdmin) {
       calls.push(
@@ -53,7 +56,15 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
   const totalDiscount = timeData.reduce((s, d) => s + d.totalDiscount, 0);
   const totalOrders = timeData.reduce((s, d) => s + d.orderCount, 0);
   const totalPayroll = payrollSummary?.totalActualSalary ?? 0;
+
+  const months =
+    params.from && params.to
+      ? Math.max(1, Math.round((params.to - params.from) / (30.44 * 24 * 60 * 60 * 1000)))
+      : 1;
+  const totalRent = (rentSummary?.totalActiveRentCost ?? 0) * months;
+
   const netProfitAfterPayroll = totalProfit - totalPayroll;
+  const netProfitAfterAll = netProfitAfterPayroll - totalRent;
 
   return (
     <div className="space-y-6">
@@ -69,9 +80,16 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
           sub={`${payrollSummary?.employeeCount ?? 0} employees`}
         />
         <StatCard
-          label="Net Profit (after Payroll)"
-          value={fmt(netProfitAfterPayroll)}
-          color={netProfitAfterPayroll >= 0 ? "green" : "red"}
+          label="Rent Cost"
+          value={fmt(totalRent)}
+          color="red"
+          sub={`${rentSummary?.activeBranchCount ?? 0} active branches × ${months} month${months > 1 ? "s" : ""}`}
+        />
+        <StatCard
+          label="Net Profit"
+          value={fmt(netProfitAfterAll)}
+          color={netProfitAfterAll >= 0 ? "green" : "red"}
+          sub="after payroll & rent"
         />
       </div>
 

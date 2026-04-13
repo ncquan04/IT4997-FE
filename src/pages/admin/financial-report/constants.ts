@@ -16,6 +16,7 @@ export const TABS = [
   { id: "refund", label: "Refunds" },
   { id: "loyalty", label: "Loyalty" },
   { id: "payroll", label: "Payroll Cost" },
+  { id: "rent-cost", label: "Rent Cost" },
 ] as const;
 
 export type TabId = (typeof TABS)[number]["id"];

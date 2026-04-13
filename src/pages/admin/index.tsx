@@ -312,6 +312,28 @@ const AdminDashboard = () => {
       color: "bg-cyan-500",
     },
     {
+      title: "Quản lý chi nhánh",
+      description: "Xem và quản lý thông tin, chi phí mặt bằng các chi nhánh",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      ),
+      link: AppRoutes.ADMIN_BRANCHES,
+      color: "bg-slate-500",
+    },
+    {
       title: "Payroll Management",
       description:
         "Generate payrolls, confirm, and manage monthly salary payments",

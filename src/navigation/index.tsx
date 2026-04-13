@@ -33,6 +33,7 @@ import FinancialReportPage from "../pages/admin/FinancialReportPage";
 import EmployeeManagementPage from "../pages/admin/EmployeeManagementPage";
 import AttendanceManagementPage from "../pages/admin/AttendanceManagementPage";
 import PayrollManagementPage from "../pages/admin/PayrollManagementPage";
+import BranchManagementPage from "../pages/admin/BranchManagementPage";
 import CategoryPage from "../pages/category/CategoryPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -71,6 +72,7 @@ export const AppRoutes = {
   ADMIN_EMPLOYEES: "/admin/employees",
   ADMIN_ATTENDANCE: "/admin/attendance",
   ADMIN_PAYROLL: "/admin/payroll",
+  ADMIN_BRANCHES: "/admin/branches",
   CATEGORY: "/categories/:categoryId",
 };
 
@@ -354,6 +356,14 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <PayrollManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_BRANCHES}
+            element={
+              <AdminLayout>
+                <BranchManagementPage />
               </AdminLayout>
             }
           />

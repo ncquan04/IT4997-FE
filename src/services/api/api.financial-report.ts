@@ -124,6 +124,20 @@ export interface LoyaltySummary {
   tierConfigs: { tier: string; minSpent: number; discountPercent: number }[];
 }
 
+export interface RentCostSummary {
+  totalRentCost: number;
+  totalActiveRentCost: number;
+  branchCount: number;
+  activeBranchCount: number;
+}
+
+export interface RentCostBranchItem {
+  _id: string;
+  branchName: string;
+  rentCost: number;
+  isActive: boolean;
+}
+
 // ─── API calls ───────────────────────────────────────────────────────────────
 
 function toParams(p: FinancialReportParams): Record<string, string> {
@@ -203,4 +217,9 @@ export const financialReportApi = {
     if (params.year !== undefined) p.year = String(params.year);
     return apiService.get(`${BASE}/payroll-cost`, { params: p });
   },
+
+  getRentCost: async (params: FinancialReportParams = {}): Promise<{
+    summary: RentCostSummary;
+    byBranch: RentCostBranchItem[];
+  }> => apiService.get(`${BASE}/rent-cost`, { params: toParams(params) }),
 };

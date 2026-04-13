@@ -9,6 +9,7 @@ import { ImportCostTab } from "./financial-report/tabs/ImportCostTab";
 import { RefundTab } from "./financial-report/tabs/RefundTab";
 import { LoyaltyTab } from "./financial-report/tabs/LoyaltyTab";
 import { PayrollTab } from "./financial-report/tabs/PayrollTab";
+import { RentCostTab } from "./financial-report/tabs/RentCostTab";
 import type { FinancialReportParams } from "../../services/api/api.financial-report";
 
 const FinancialReportPage = () => {
@@ -82,6 +83,7 @@ const FinancialReportPage = () => {
         {activeTab === "refund" && <RefundTab params={params} />}
         {activeTab === "loyalty" && <LoyaltyTab params={params} />}
         {activeTab === "payroll" && <PayrollTab />}
+        {activeTab === "rent-cost" && <RentCostTab />}
       </div>
     </div>
   );
