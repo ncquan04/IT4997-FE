@@ -312,8 +312,8 @@ const AdminDashboard = () => {
       color: "bg-cyan-500",
     },
     {
-      title: "Quản lý chi nhánh",
-      description: "Xem và quản lý thông tin, chi phí mặt bằng các chi nhánh",
+      title: "Branch Management",
+      description: "View and manage branch information and rental costs",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"

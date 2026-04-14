@@ -68,6 +68,28 @@ export const fetchEmployeeById = async (
   }
 };
 
+export interface ICreateEmployeePayload {
+  userName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role?: string;
+  branchId?: string;
+  baseSalary?: number;
+  startDate?: number;
+}
+
+export const createEmployee = async (
+  payload: ICreateEmployeePayload,
+): Promise<IEmployee | null> => {
+  try {
+    return await apiService.post<IEmployee>(API.CREATE.URL, payload);
+  } catch (error) {
+    console.error("createEmployee error:", error);
+    return null;
+  }
+};
+
 export const updateEmployee = async (
   id: string,
   payload: IUpdateEmployeePayload,

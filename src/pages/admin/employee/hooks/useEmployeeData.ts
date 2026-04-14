@@ -3,7 +3,10 @@ import { useAuth } from "../../../../contexts/AuthContext";
 import { UserRole } from "../../../../shared/models/user-model";
 import type { IBranch } from "../../../../shared/models/branch-model";
 import { fetchBranches } from "../../../../services/api/api.branches";
-import { fetchEmployees, type IEmployee } from "../../../../services/api/api.hr-employee";
+import {
+  fetchEmployees,
+  type IEmployee,
+} from "../../../../services/api/api.hr-employee";
 
 export const useEmployeeData = () => {
   const { user } = useAuth();
@@ -39,7 +42,13 @@ export const useEmployeeData = () => {
   }, [loadData]);
 
   const updateOne = (updated: IEmployee) => {
-    setEmployees((prev) => prev.map((e) => (e._id === updated._id ? updated : e)));
+    setEmployees((prev) =>
+      prev.map((e) => (e._id === updated._id ? updated : e)),
+    );
+  };
+
+  const addOne = (emp: IEmployee) => {
+    setEmployees((prev) => [emp, ...prev]);
   };
 
   return {
@@ -47,10 +56,15 @@ export const useEmployeeData = () => {
     employees,
     branches,
     isLoading,
-    filterBranch, setFilterBranch,
-    filterRole, setFilterRole,
-    filterActive, setFilterActive,
-    search, setSearch,
+    filterBranch,
+    setFilterBranch,
+    filterRole,
+    setFilterRole,
+    filterActive,
+    setFilterActive,
+    search,
+    setSearch,
     updateOne,
+    addOne,
   };
 };
