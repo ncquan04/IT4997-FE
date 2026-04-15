@@ -35,6 +35,7 @@ export interface IUpdateEmployeePayload {
   isActive?: boolean;
   userName?: string;
   phoneNumber?: string;
+  dependants?: number;
 }
 
 export const fetchEmployees = async (
@@ -77,6 +78,7 @@ export interface ICreateEmployeePayload {
   branchId?: string;
   baseSalary?: number;
   startDate?: number;
+  dependants?: number;
 }
 
 export const createEmployee = async (

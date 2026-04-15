@@ -36,6 +36,7 @@ export const EditModal = ({
       typeof employee.branchId === "object"
         ? (employee.branchId as any)?._id
         : employee.branchId,
+    dependants: (employee as any).dependants ?? 0,
   });
   const [saving, setSaving] = useState(false);
 
@@ -137,6 +138,21 @@ export const EditModal = ({
               min={0}
               onChange={(e) =>
                 setForm((f) => ({ ...f, baseSalary: Number(e.target.value) }))
+              }
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Người phụ thuộc (giảm trừ thuế TNCN)
+            </label>
+            <input
+              type="number"
+              className="w-full border rounded-lg px-3 py-2 text-sm"
+              value={form.dependants ?? 0}
+              min={0}
+              max={20}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, dependants: Number(e.target.value) }))
               }
             />
           </div>
