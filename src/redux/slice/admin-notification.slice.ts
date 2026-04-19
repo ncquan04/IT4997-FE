@@ -10,7 +10,7 @@ const initialState: IAdminNotificationInitialState = {
     notifications: [],
     newNotification: {
         _id: "",
-        notificationType: "",
+        notificationType: "ORDER" as import("../../shared/models/notification-model").NotificationType,
         title: "",
         message: "",
         referenceId: "",

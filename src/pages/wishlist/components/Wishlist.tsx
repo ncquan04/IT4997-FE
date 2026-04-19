@@ -2,14 +2,12 @@ import type { Product } from "../../../shared/models/product-model";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/swiper.css";
 import ItemCard from "../../../components/common/itemCard/ItemCard";
-import CommonButton from "../../../components/common/CommonButton";
 
 interface WishlistProps {
   products: Product[];
 }
 
 const Wishlist = ({ products }: WishlistProps) => {
-  const handleMoveToBag = () => {};
 
   return (
     <section

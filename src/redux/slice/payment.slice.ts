@@ -42,7 +42,7 @@ const paymentSlice = createSlice({
             state.order[action.payload.field] = action.payload.value;
         },
     },
-    extraReducers: (builder) => {},
+    extraReducers: (_builder) => {},
 });
 export type UserInfoType = keyof IPaymentInitState["userInfo"];
 
