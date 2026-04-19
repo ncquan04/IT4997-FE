@@ -1,7 +1,6 @@
 import { HORIZONTAL_PADDING_REM } from "../../../constants";
 import CartButton from "./CartButton";
 import PageSelector from "./PageSelector";
-import SearchBar from "./SearchBar";
 import WishlistButton from "./WishlistButton";
 import { Link } from "react-router-dom";
 import { useState } from "react";

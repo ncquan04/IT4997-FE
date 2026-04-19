@@ -32,7 +32,7 @@ export const usePayrollData = () => {
       isAdmin ? fetchBranches() : Promise.resolve([]),
       fetchPayrollList({ month, year, branchId: filterBranch || undefined }),
     ]);
-    if (isAdmin) setBranches(branchList);
+    if (isAdmin) setBranches(branchList as unknown as IBranch[]);
     setRecords(payrollList);
     setIsLoading(false);
   }, [isAdmin, month, year, filterBranch]);

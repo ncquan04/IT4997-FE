@@ -13,8 +13,8 @@ const I18nContext = createContext<{
   locale: (v: string) => void;
   currentLocale: string;
 }>({
-  t: (k: string, ...args: any[]) => "",
-  locale: (v: string) => undefined,
+  t: (_k: string, ..._args: any[]) => "",
+  locale: (_v: string) => undefined,
   currentLocale: "en",
 });
 

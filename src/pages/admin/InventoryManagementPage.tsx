@@ -1,7 +1,6 @@
 ﻿import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import InventoryTable from "../../components/admin/InventoryTable";
-import { fetchBranches } from "../../services/api/api.branches";
 import { fetchSuppliers } from "../../services/api/api.suppliers";
 import { createStockImport } from "../../services/api/api.stock-import";
 import { fetchProductById } from "../../services/api/api.products";

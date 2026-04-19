@@ -46,7 +46,7 @@ export const useStockImportData = () => {
   };
 
   useEffect(() => {
-    fetchBranches().then(setBranches);
+    fetchBranches().then((d) => setBranches(d as unknown as IBranch[]));
     fetchSuppliers().then(setSuppliers);
   }, []);
 

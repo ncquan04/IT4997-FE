@@ -50,7 +50,7 @@ export const useWarrantyData = () => {
 
   useEffect(() => {
     if (user?.role !== UserRole.TECHNICIAN) {
-      fetchBranches(true).then(setBranches);
+      fetchBranches(true).then((d) => setBranches(d as unknown as IBranch[]));
     }
   }, [user?.role]);
 

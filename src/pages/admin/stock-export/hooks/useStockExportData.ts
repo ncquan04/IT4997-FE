@@ -42,7 +42,7 @@ export const useStockExportData = () => {
   };
 
   useEffect(() => {
-    fetchBranches().then((data) => setBranches(data ?? []));
+    fetchBranches().then((data) => setBranches((data ?? []) as unknown as IBranch[]));
   }, []);
 
   useEffect(() => {

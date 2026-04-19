@@ -1,5 +1,5 @@
-import type { IBranch } from "../../../shared/models/branch-model";
-import type { IEmployee } from "../../../services/api/api.hr-employee";
+import type { IBranch } from "../../../../shared/models/branch-model";
+import type { IEmployee } from "../../../../services/api/api.hr-employee";
 
 interface AttendanceFiltersProps {
   isAdmin: boolean;

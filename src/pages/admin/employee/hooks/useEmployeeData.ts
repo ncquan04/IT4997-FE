@@ -33,7 +33,7 @@ export const useEmployeeData = () => {
       isAdmin ? fetchBranches() : Promise.resolve([]),
     ]);
     setEmployees(empList);
-    if (isAdmin) setBranches(branchList);
+    if (isAdmin) setBranches(branchList as unknown as IBranch[]);
     setIsLoading(false);
   }, [filterBranch, filterRole, filterActive, search, isAdmin]);
 

@@ -33,7 +33,7 @@ const StockImportItemRow = ({
   item,
   index,
   variants,
-  selectedVariant,
+  selectedVariant: _selectedVariant,
   productOptions,
   lineTotal,
   quantity,

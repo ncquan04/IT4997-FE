@@ -1,6 +1,5 @@
 import { useEffect, useRef } from "react";
 import { NotificationIcon } from "../../icons/NotificationIcons";
-import type { INotification } from "../../shared/models/notification-model";
 import { useAppDispatch, useAppSelector, type RootState } from "../../redux/store";
 import adminNotification from "../../redux/async-thunk/admin-notification.thunk";
 import { setReadedNoti } from "../../redux/slice/admin-notification.slice";

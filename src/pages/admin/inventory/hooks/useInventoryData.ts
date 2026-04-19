@@ -38,7 +38,7 @@ export const useInventoryData = () => {
   };
 
   useEffect(() => {
-    fetchBranches().then(setBranches);
+    fetchBranches().then((d) => setBranches(d as unknown as IBranch[]));
   }, []);
 
   useEffect(() => {

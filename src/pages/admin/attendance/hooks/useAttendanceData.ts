@@ -26,7 +26,7 @@ export const useAttendanceData = () => {
       isAdmin ? fetchBranches() : Promise.resolve([]),
       fetchEmployees({ branchId: filterBranch || undefined }),
     ]);
-    if (isAdmin) setBranches(branchList);
+    if (isAdmin) setBranches(branchList as unknown as IBranch[]);
     setEmployees(empList);
   }, [isAdmin, filterBranch]);
 
