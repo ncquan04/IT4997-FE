@@ -9,73 +9,120 @@ interface EmployeeTableProps {
   onEdit: (emp: IEmployee) => void;
 }
 
-export const EmployeeTable = ({ employees, isLoading, onEdit }: EmployeeTableProps) => {
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border p-12 text-center text-gray-500">
-        Loading...
-      </div>
-    );
-  }
-
-  if (employees.length === 0) {
-    return (
-      <div className="bg-white rounded-xl shadow-sm border p-12 text-center text-gray-500">
-        No employees found.
-      </div>
-    );
-  }
-
+export const EmployeeTable = ({
+  employees,
+  isLoading,
+  onEdit,
+}: EmployeeTableProps) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Full Name</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Phone</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Branch</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Base Salary</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Start Date</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-            <th className="px-4 py-3"></th>
+    <div className="overflow-x-auto">
+      <table className="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-100">
+            {[
+              "Full Name",
+              "Email",
+              "Phone",
+              "Role",
+              "Branch",
+              "Base Salary",
+              "Start Date",
+              "Status",
+            ].map((col) => (
+              <th
+                key={col}
+                className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider"
+              >
+                {col}
+              </th>
+            ))}
+            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider text-right">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
-          {employees.map((emp) => (
-            <motion.tr
-              key={emp._id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="border-b hover:bg-gray-50 transition-colors"
-            >
-              <td className="px-4 py-3 font-medium text-gray-800">{emp.userName}</td>
-              <td className="px-4 py-3 text-gray-600">{emp.email}</td>
-              <td className="px-4 py-3 text-gray-600">{emp.phoneNumber}</td>
-              <td className="px-4 py-3">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[emp.role] ?? "bg-gray-100 text-gray-600"}`}>
-                  {ROLE_LABELS[emp.role] ?? emp.role}
-                </span>
+          {isLoading ? (
+            <tr>
+              <td colSpan={9} className="p-12 text-center text-gray-400">
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 border-4 border-button2 border-t-transparent rounded-full animate-spin mb-4" />
+                  Loading...
+                </div>
               </td>
-              <td className="px-4 py-3 text-gray-600">{getBranchName(emp.branchId)}</td>
-              <td className="px-4 py-3 text-gray-600">{formatCurrency(emp.baseSalary)}</td>
-              <td className="px-4 py-3 text-gray-600">{formatDate(emp.startDate)}</td>
-              <td className="px-4 py-3">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${emp.isActive !== false ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-                  {emp.isActive !== false ? "Active" : "Inactive"}
-                </span>
+            </tr>
+          ) : employees.length === 0 ? (
+            <tr>
+              <td colSpan={9} className="p-12 text-center text-gray-400">
+                No employees found.
               </td>
-              <td className="px-4 py-3">
-                <button
-                  onClick={() => onEdit(emp)}
-                  className="text-blue-600 hover:underline text-xs"
-                >
-                  Edit
-                </button>
-              </td>
-            </motion.tr>
-          ))}
+            </tr>
+          ) : (
+            employees.map((emp, index) => (
+              <motion.tr
+                key={emp._id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.04 }}
+                className="border-b border-gray-100 hover:bg-blue-50/50 transition-colors group"
+              >
+                <td className="p-5 font-medium text-gray-800">
+                  {emp.userName}
+                </td>
+                <td className="p-5 text-gray-600">{emp.email}</td>
+                <td className="p-5 text-gray-600">{emp.phoneNumber}</td>
+                <td className="p-5">
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_COLORS[emp.role] ?? "bg-gray-100 text-gray-600"}`}
+                  >
+                    {ROLE_LABELS[emp.role] ?? emp.role}
+                  </span>
+                </td>
+                <td className="p-5 text-gray-600">
+                  {getBranchName(emp.branchId)}
+                </td>
+                <td className="p-5 text-gray-600">
+                  {formatCurrency(emp.baseSalary)}
+                </td>
+                <td className="p-5 text-gray-600">
+                  {formatDate(emp.startDate)}
+                </td>
+                <td className="p-5">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${emp.isActive !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-500"}`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full mr-1.5 ${emp.isActive !== false ? "bg-green-500" : "bg-gray-400"}`}
+                    />
+                    {emp.isActive !== false ? "Active" : "Inactive"}
+                  </span>
+                </td>
+                <td className="p-5 text-right">
+                  <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                      onClick={() => onEdit(emp)}
+                      className="p-2 text-button2 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Edit"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </motion.tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

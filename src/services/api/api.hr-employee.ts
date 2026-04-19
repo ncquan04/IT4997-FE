@@ -35,6 +35,7 @@ export interface IUpdateEmployeePayload {
   isActive?: boolean;
   userName?: string;
   phoneNumber?: string;
+  dependants?: number;
 }
 
 export const fetchEmployees = async (
@@ -64,6 +65,29 @@ export const fetchEmployeeById = async (
     return await apiService.get<IEmployee>(API.GET_DETAIL(id).URL);
   } catch (error) {
     console.error("fetchEmployeeById error:", error);
+    return null;
+  }
+};
+
+export interface ICreateEmployeePayload {
+  userName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  role?: string;
+  branchId?: string;
+  baseSalary?: number;
+  startDate?: number;
+  dependants?: number;
+}
+
+export const createEmployee = async (
+  payload: ICreateEmployeePayload,
+): Promise<IEmployee | null> => {
+  try {
+    return await apiService.post<IEmployee>(API.CREATE.URL, payload);
+  } catch (error) {
+    console.error("createEmployee error:", error);
     return null;
   }
 };
