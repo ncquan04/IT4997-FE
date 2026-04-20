@@ -1,9 +1,11 @@
 # ---- Build stage ----
+# syntax=docker/dockerfile:1
 FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm \
+    NODE_OPTIONS=--max-old-space-size=512 npm install --legacy-peer-deps
 
 COPY . .
 

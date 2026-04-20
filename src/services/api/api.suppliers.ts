@@ -1,6 +1,6 @@
 import { Contacts } from "../../shared/contacts";
 import type { ISupplier } from "../../shared/models/supplier-model";
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 
 const API_PATH = Contacts.API_CONFIG;
 

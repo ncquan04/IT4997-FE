@@ -1,4 +1,4 @@
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 import { Contacts } from "../../shared/contacts";
 import type { INotification } from "../../shared/models/notification-model";
 import type { NotiPaginationType } from "../../types/admin-notification.types";

@@ -1,6 +1,6 @@
 import { Contacts } from "../../shared/contacts";
 import type { IRefundReport } from "../../types/payment-management.types";
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 
 const API_PATH = Contacts.API_CONFIG;
 

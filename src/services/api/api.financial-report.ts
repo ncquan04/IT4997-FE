@@ -1,5 +1,5 @@
 import { Contacts } from "../../shared/contacts";
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 
 const BASE = Contacts.FINANCIAL_REPORT_PATH;
 

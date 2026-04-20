@@ -2,7 +2,7 @@ import { Contacts } from "../../shared/contacts";
 import type { IOrder, IProductItem } from "../../shared/models/order-model";
 import type { IPayment } from "../../shared/models/payment-model";
 import type { PaginationType } from "../../types/payment-management.types";
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 
 const API_PATH = Contacts.API_CONFIG;
 const STATUS_ORDER = Contacts.Status.Order;

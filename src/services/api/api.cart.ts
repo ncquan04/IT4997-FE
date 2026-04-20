@@ -1,4 +1,4 @@
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 import type { ICart } from "../../shared/models/cart-model";
 import type { IProductVariant } from "../../shared/models/product-model";
 import { Contacts } from "../../shared/contacts";

@@ -1,5 +1,5 @@
 import { Contacts } from "../../shared/contacts";
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 import type { IUser } from "../../shared/models/user-model";
 import type { IBranch } from "../../shared/models/branch-model";
 

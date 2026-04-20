@@ -1,4 +1,4 @@
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 import { Contacts } from "../../shared/contacts";
 
 const API_PATH = Contacts.API_CONFIG;

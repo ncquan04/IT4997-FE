@@ -1,4 +1,4 @@
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 import { Contacts } from "../../shared/contacts";
 import type { ICoupon } from "../../shared/models/coupon-model";
 

@@ -1,6 +1,6 @@
 import { Contacts } from "../../shared/contacts";
 import type { IBranch, IBranchPopulated } from "../../shared/models/branch-model";
-import { apiService } from "./api.config";
+import { apiService } from "./index";
 
 const API_PATH = Contacts.API_CONFIG;
 
