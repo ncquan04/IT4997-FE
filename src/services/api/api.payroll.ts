@@ -1,5 +1,6 @@
 import { Contacts } from "../../shared/contacts";
 import { apiService } from "./index";
+import api from "./index";
 import type {
   IPayroll,
   PayrollStatus,
@@ -85,4 +86,32 @@ export const updatePayrollStatus = async (
     console.error("updatePayrollStatus error:", error);
     return null;
   }
+};
+
+export const exportPayroll = async (params: {
+  month: number;
+  year: number;
+  branchId?: string;
+  format: "xlsx" | "csv";
+}): Promise<void> => {
+  const q = new URLSearchParams({
+    month: String(params.month),
+    year: String(params.year),
+    format: params.format,
+    ...(params.branchId ? { branchId: params.branchId } : {}),
+  });
+
+  const res = await api.get(`${API.EXPORT.URL}?${q}`, { responseType: "blob" });
+
+  const ext = params.format;
+  const mimeType = ext === "xlsx"
+    ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    : "text/csv;charset=utf-8;";
+
+  const url = URL.createObjectURL(new Blob([res.data], { type: mimeType }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `payroll-${params.year}-${String(params.month).padStart(2, "0")}.${ext}`;
+  a.click();
+  URL.revokeObjectURL(url);
 };

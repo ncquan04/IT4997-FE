@@ -4,6 +4,7 @@ import { usePayrollData } from "./payroll/hooks/usePayrollData";
 import PayrollTable from "./payroll/components/PayrollTable";
 import GenerateModal from "./payroll/components/GenerateModal";
 import { formatCurrency } from "./payroll/constants";
+import { exportPayroll } from "../../services/api/api.payroll";
 
 const PayrollManagementPage = () => {
   const {
@@ -27,18 +28,46 @@ const PayrollManagementPage = () => {
   } = usePayrollData();
 
   const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async (format: "xlsx" | "csv") => {
+    setExporting(true);
+    try {
+      await exportPayroll({ month, year, branchId: filterBranch || undefined, format });
+    } catch (e) {
+      console.error("Export failed", e);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Payroll Management</h1>
-          <button
-            onClick={() => setShowGenerateModal(true)}
-            className="px-4 py-2 bg-button2 text-white rounded-lg text-sm hover:opacity-90 whitespace-nowrap"
-          >
-            + Generate Payroll
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleExport("xlsx")}
+              disabled={exporting || records.length === 0}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
+            >
+              {exporting ? "Exporting..." : "Export Excel"}
+            </button>
+            <button
+              onClick={() => handleExport("csv")}
+              disabled={exporting || records.length === 0}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50 whitespace-nowrap"
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={() => setShowGenerateModal(true)}
+              className="px-4 py-2 bg-button2 text-white rounded-lg text-sm hover:opacity-90 whitespace-nowrap"
+            >
+              + Generate Payroll
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
