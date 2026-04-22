@@ -26,6 +26,12 @@ const BannerSwiper = ({ products }: BannerSwiperProps) => {
                     background: #ef4444;
                     opacity: 1;
                 }
+                @media (max-width: 767px) {
+                    .banner-swiper .swiper-pagination {
+                        top: 8px;
+                        bottom: auto;
+                    }
+                }
             `}</style>
       <Swiper
         modules={[Pagination, Autoplay]}
@@ -51,7 +57,7 @@ const BannerSwiper = ({ products }: BannerSwiperProps) => {
                   alt={product.title}
                   className="w-full h-full object-contain"
                 />
-                <figcaption className="flex flex-col gap-2 md:gap-4 items-start absolute bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-[30px] md:left-[30px]">
+                <figcaption className="flex flex-col gap-2 md:gap-4 items-start absolute bottom-4 left-4 sm:bottom-6 sm:left-6 md:bottom-7.5 md:left-7.5">
                   <span className="text-black text-base sm:text-lg md:text-xl lg:text-2xl font-semibold">
                     {product.title}
                   </span>

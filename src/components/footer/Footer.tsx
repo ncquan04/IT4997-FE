@@ -10,27 +10,39 @@ const Footer = () => {
   const i18n = useI18n();
 
   return (
-    <main className="flex flex-col pt-12 sm:pt-16 md:pt-24 lg:pt-32 gap-12 md:gap-16 lg:gap-24">
-      <section className="flex flex-col sm:flex-row flex-wrap justify-center items-center sm:items-start gap-8 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8" aria-label="Features">
-        <FeatureCard 
-          icon={<DeliveryIcon width={40} height={40}/>}
+    <main className="flex flex-col pt-6 sm:pt-16 md:pt-24 lg:pt-32 gap-6 md:gap-16 lg:gap-24">
+      <section
+        className="grid grid-cols-3 md:flex md:flex-row flex-wrap justify-center items-start gap-4 md:gap-12 lg:gap-16 px-4 sm:px-6 md:px-8"
+        aria-label="Features"
+      >
+        <FeatureCard
+          icon={<DeliveryIcon width={40} height={40} />}
           title={i18n.t("FREE AND FAST DELIVERY")}
           description={i18n.t("Free delivery for all orders over $140")}
         />
-        <FeatureCard 
-          icon={<CustomerServiceIcon width={40} height={40}/>}
+        <FeatureCard
+          icon={<CustomerServiceIcon width={40} height={40} />}
           title={i18n.t("24/7 CUSTOMER SERVICE")}
           description={i18n.t("Friendly 24/7 customer support")}
         />
-        <FeatureCard 
-          icon={<CustomerServiceIcon width={40} height={40}/>}
+        <FeatureCard
+          icon={<CustomerServiceIcon width={40} height={40} />}
           title={i18n.t("MONEY BACK GUARANTEE")}
           description={i18n.t("We return money within 30 days")}
         />
       </section>
-      <footer className="w-full bg-black pt-8 md:pt-12 pb-6 px-4 sm:px-6 md:px-8 lg:px-12" role="contentinfo">
-        <nav className="flex flex-col md:flex-row justify-center md:justify-around gap-8 md:gap-6 pb-8 md:pb-12 max-w-7xl mx-auto" aria-label="Footer navigation">
-          <section className="flex-1 md:flex-none md:max-w-40" aria-label="Brand">
+      <footer
+        className="w-full bg-black pt-6 md:pt-12 pb-4 md:pb-6 px-4 sm:px-6 md:px-8 lg:px-12"
+        role="contentinfo"
+      >
+        <nav
+          className="grid grid-cols-2 md:flex md:flex-row md:justify-around gap-6 md:gap-6 pb-6 md:pb-12 max-w-7xl mx-auto"
+          aria-label="Footer navigation"
+        >
+          <section
+            className="col-span-2 md:col-span-1 md:flex-none md:max-w-40"
+            aria-label="Brand"
+          >
             <p className="text-xl font-semibold text-white">Apex</p>
           </section>
           <SupportSection />

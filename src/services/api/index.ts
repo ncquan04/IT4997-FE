@@ -1,7 +1,10 @@
-import axios from 'axios';
-import type { AxiosRequestConfig } from 'axios';
+import axios from "axios";
+import type { AxiosRequestConfig } from "axios";
 
-const baseURL = (import.meta as any).env?.VITE_ENDPOINT || (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:4000/api';
+const baseURL =
+  (import.meta as any).env?.VITE_ENDPOINT ||
+  (import.meta as any).env?.VITE_API_BASE_URL ||
+  "http://localhost:4000/api";
 
 const api = axios.create({
   baseURL,
@@ -11,9 +14,9 @@ const api = axios.create({
 // Attach access token from localStorage (if present)
 api.interceptors.request.use((config) => {
   try {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
     if (token && config && config.headers) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
   } catch (_) {
     // ignore (e.g., SSR or no localStorage)
@@ -36,12 +39,24 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest: any = error.config;
-    if (error?.response?.status === 401 && !originalRequest?._retry) {
+
+    // Skip refresh logic for auth endpoints (login, register, refresh-token itself)
+    const isAuthEndpoint =
+      originalRequest?.url &&
+      (originalRequest.url.includes("/auth/login") ||
+        originalRequest.url.includes("/auth/register") ||
+        originalRequest.url.includes("/auth/refresh-token"));
+
+    if (
+      error?.response?.status === 401 &&
+      !originalRequest?._retry &&
+      !isAuthEndpoint
+    ) {
       originalRequest._retry = true;
       if (isRefreshing) {
         return new Promise((resolve) => {
           addRefreshSubscriber((token: string) => {
-            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+            originalRequest.headers["Authorization"] = "Bearer " + token;
             resolve(api(originalRequest));
           });
         });
@@ -49,26 +64,35 @@ api.interceptors.response.use(
 
       isRefreshing = true;
       try {
-        const refreshUrl = `${baseURL.replace(/\/$/, '')}/auth/refresh-token`;
+        const refreshUrl = `${baseURL.replace(/\/$/, "")}/auth/refresh-token`;
         const r = await axios.post(refreshUrl, {}, { withCredentials: true });
         const newToken = r?.data?.accessToken;
         if (newToken) {
-          try { localStorage.setItem('accessToken', newToken); } catch (_) {}
-          api.defaults.headers.common['Authorization'] = 'Bearer ' + newToken;
+          try {
+            localStorage.setItem("accessToken", newToken);
+          } catch (_) {}
+          api.defaults.headers.common["Authorization"] = "Bearer " + newToken;
           onRefreshed(newToken);
         }
         return api(originalRequest);
       } catch (e) {
-        // fallback: redirect to login
-        try { localStorage.removeItem('accessToken'); } catch (_) {}
-        if (typeof window !== 'undefined') window.location.href = '/login';
+        // fallback: redirect to login only if not already there
+        try {
+          localStorage.removeItem("accessToken");
+        } catch (_) {}
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/login")
+        ) {
+          window.location.href = "/login";
+        }
         return Promise.reject(e);
       } finally {
         isRefreshing = false;
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
@@ -94,15 +118,19 @@ export const apiService = {
   async delete<T = any>(url: string, config?: AxiosRequestConfig) {
     const res = await api.delete<T>(url, config);
     return res.data;
-  }
+  },
 };
 
 export const setAccessToken = (token: string | null) => {
   if (token) {
-    try { localStorage.setItem('accessToken', token); } catch (_) {}
-    api.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+    try {
+      localStorage.setItem("accessToken", token);
+    } catch (_) {}
+    api.defaults.headers.common["Authorization"] = "Bearer " + token;
   } else {
-    try { localStorage.removeItem('accessToken'); } catch (_) {}
-    delete api.defaults.headers.common['Authorization'];
+    try {
+      localStorage.removeItem("accessToken");
+    } catch (_) {}
+    delete api.defaults.headers.common["Authorization"];
   }
 };

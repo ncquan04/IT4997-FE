@@ -14,6 +14,12 @@ import LoadingScreen from "../../components/common/LoadingScreen";
 
 type PriceSort = "" | "price_asc" | "price_desc";
 
+const SORT_OPTIONS: { label: string; val: PriceSort }[] = [
+  { label: "Mặc định", val: "" },
+  { label: "Giá thấp ↑", val: "price_asc" },
+  { label: "Giá cao ↓", val: "price_desc" },
+];
+
 const AllProductsPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -24,10 +30,8 @@ const AllProductsPage = () => {
     (state: RootState) => state.search,
   );
 
-  // ===== URL-driven category state =====
   const activeCategoryId = searchParams.get("categoryId") || "";
 
-  // ===== Filter / Sort state =====
   const [priceSort, setPriceSort] = useState<PriceSort>("");
   const [selectedFilters, setSelectedFilters] = useState<
     Record<string, string>
@@ -36,6 +40,8 @@ const AllProductsPage = () => {
   const [specValueMap, setSpecValueMap] = useState<Record<string, string[]>>(
     {},
   );
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mobileOpenKey, setMobileOpenKey] = useState<string | null>(null);
 
   // ===== Category tree =====
   const parentCategories = useMemo(
@@ -59,7 +65,7 @@ const AllProductsPage = () => {
     );
   }, [categories, activeCategoryId, isParent, activeCategory]);
 
-  // ===== Reset filters on category change =====
+  // ===== Reset on category change =====
   const prevCatRef = useMemo(() => ({ current: activeCategoryId }), []);
   useEffect(() => {
     if (prevCatRef.current === activeCategoryId) return;
@@ -87,7 +93,6 @@ const AllProductsPage = () => {
     });
   }, [products]);
 
-  // ===== Fetch categories =====
   useEffect(() => {
     if (categories.length === 0) dispatch(categoriesAync.fectchCategories());
   }, []);
@@ -99,10 +104,8 @@ const AllProductsPage = () => {
         .map(([k, v]) => ({ key: k, value: v })),
     [selectedFilters],
   );
-
   const specFiltersKey = JSON.stringify(specFilters);
 
-  // ===== Fetch products =====
   useEffect(() => {
     dispatch(
       searchAsync.searchProducts({
@@ -137,17 +140,13 @@ const AllProductsPage = () => {
 
   const hasMore = page! < totalPages;
 
-  // ===== Filter handlers =====
   const selectCategory = (id: string) => {
     setSelectedFilters({});
     setPriceSort("");
     setOpenFilterKey(null);
     setSpecValueMap({});
-    if (id) {
-      setSearchParams({ categoryId: id });
-    } else {
-      setSearchParams({});
-    }
+    if (id) setSearchParams({ categoryId: id });
+    else setSearchParams({});
   };
 
   const toggleFilter = (key: string, value: string) => {
@@ -214,15 +213,15 @@ const AllProductsPage = () => {
       </nav>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold">
+      <h1 className="text-xl md:text-2xl font-bold">
         {activeCategory ? activeCategory.name : "Tất cả sản phẩm"}
       </h1>
 
       {/* Parent category tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-3">
+      <div className="flex gap-2 overflow-x-auto pb-3 border-b border-gray-200 scrollbar-none">
         <button
           onClick={() => selectCategory("")}
-          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer ${
+          className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer shrink-0 ${
             !activeCategoryId
               ? "bg-secondary2 text-white border-secondary2"
               : "bg-white text-gray-700 border-gray-300 hover:border-secondary2 hover:text-secondary2"
@@ -239,7 +238,7 @@ const AllProductsPage = () => {
             <button
               key={cat._id}
               onClick={() => selectCategory(cat._id)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-colors cursor-pointer shrink-0 ${
                 isActive
                   ? "bg-secondary2 text-white border-secondary2"
                   : "bg-white text-gray-700 border-gray-300 hover:border-secondary2 hover:text-secondary2"
@@ -253,7 +252,7 @@ const AllProductsPage = () => {
 
       {/* Sub-category tabs */}
       {childCategories.length > 0 && (
-        <div className="flex flex-wrap gap-2 animate-fade-in-down">
+        <div className="flex gap-2 overflow-x-auto scrollbar-none animate-fade-in-down">
           {(() => {
             const parentId = isParent
               ? activeCategoryId
@@ -262,7 +261,7 @@ const AllProductsPage = () => {
               <>
                 <button
                   onClick={() => selectCategory(parentId!)}
-                  className={`px-3 py-1 rounded-full text-sm border transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-full text-sm border transition-colors cursor-pointer shrink-0 ${
                     isParent && activeCategoryId === parentId
                       ? "bg-gray-800 text-white border-gray-800"
                       : "bg-white text-gray-600 border-gray-300 hover:border-gray-500"
@@ -274,7 +273,7 @@ const AllProductsPage = () => {
                   <button
                     key={sub._id}
                     onClick={() => selectCategory(sub._id)}
-                    className={`px-3 py-1 rounded-full text-sm border transition-colors cursor-pointer ${
+                    className={`px-3 py-1 rounded-full text-sm border transition-colors cursor-pointer shrink-0 ${
                       activeCategoryId === sub._id
                         ? "bg-gray-800 text-white border-gray-800"
                         : "bg-white text-gray-600 border-gray-300 hover:border-gray-500"
@@ -289,95 +288,154 @@ const AllProductsPage = () => {
         </div>
       )}
 
-      {/* Filter & Sort Bar */}
-      <div className="border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-3 flex-wrap">
-          <span className="text-sm text-gray-500 font-medium shrink-0">
-            Sắp xếp:
-          </span>
-          {(
-            [
-              { label: "Mặc định", val: "" as PriceSort },
-              { label: "Giá thấp ↑", val: "price_asc" as PriceSort },
-              { label: "Giá cao ↓", val: "price_desc" as PriceSort },
-            ] as const
-          ).map(({ label, val }) => (
-            <button
-              key={label}
-              onClick={() => setPriceSort(val)}
-              className={`px-3 py-1.5 text-sm rounded-full border font-medium transition-all cursor-pointer shrink-0 ${
-                priceSort === val
-                  ? "bg-secondary2 text-white border-secondary2"
-                  : "bg-white text-gray-600 border-gray-300 hover:border-secondary2 hover:text-secondary2"
-              }`}
-            >
+      {/* ===== MOBILE: compact sort + filter button ===== */}
+      <div className="flex items-center gap-2 md:hidden">
+        {/* Sort select */}
+        <select
+          value={priceSort}
+          onChange={(e) => setPriceSort(e.target.value as PriceSort)}
+          className="flex-1 h-10 rounded-xl border border-gray-300 px-3 text-sm bg-white text-gray-700 cursor-pointer"
+        >
+          {SORT_OPTIONS.map(({ label, val }) => (
+            <option key={val} value={val}>
               {label}
-            </button>
+            </option>
           ))}
+        </select>
 
-          {specKeys.length > 0 && (
-            <div className="h-5 w-px bg-gray-200 mx-1 shrink-0" />
+        {/* Filter button */}
+        <button
+          onClick={() => setMobileDrawerOpen(true)}
+          className="relative flex items-center gap-2 h-10 px-4 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 cursor-pointer shrink-0"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 4h18M7 8h10M10 12h4"
+            />
+          </svg>
+          Bộ lọc
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-secondary2 text-white text-xs flex items-center justify-center font-bold">
+              {activeFilterCount}
+            </span>
           )}
+        </button>
+      </div>
 
-          {specKeys.map((key) => {
-            const isSelected = !!selectedFilters[key];
-            const isOpen = openFilterKey === key;
-            return (
+      {/* Active filter chips — mobile only */}
+      {specFilters.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 md:hidden">
+          {specFilters.map(({ key, value }) => (
+            <span
+              key={key}
+              className="flex items-center gap-1 px-3 py-1 bg-red-50 text-secondary2 border border-secondary2 rounded-full text-xs font-medium animate-scale-in"
+            >
+              {key}: {value}
               <button
-                key={key}
-                onClick={() => setOpenFilterKey(isOpen ? null : key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border font-medium transition-all cursor-pointer shrink-0 ${
-                  isSelected
-                    ? "bg-red-50 text-secondary2 border-secondary2"
-                    : isOpen
-                      ? "bg-gray-100 text-gray-700 border-gray-400"
-                      : "bg-white text-gray-600 border-gray-300 hover:border-gray-400 hover:text-gray-800"
+                onClick={() => clearFilter(key)}
+                className="hover:text-red-700 font-bold cursor-pointer bg-transparent border-0 p-0 leading-none"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ===== DESKTOP: Filter & Sort Bar ===== */}
+      <div className="hidden md:block border border-gray-200 rounded-xl bg-white shadow-sm overflow-hidden">
+        <div className="flex flex-col gap-2 px-4 py-3">
+          {/* Sort row */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+            <span className="text-sm text-gray-500 font-medium shrink-0">
+              Sắp xếp:
+            </span>
+            {SORT_OPTIONS.map(({ label, val }) => (
+              <button
+                key={label}
+                onClick={() => setPriceSort(val)}
+                className={`px-3 py-1.5 text-sm rounded-full border font-medium transition-all cursor-pointer shrink-0 ${
+                  priceSort === val
+                    ? "bg-secondary2 text-white border-secondary2"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-secondary2 hover:text-secondary2"
                 }`}
               >
-                {isSelected ? (
-                  <>
-                    <span className="font-semibold">
-                      {key}: {selectedFilters[key]}
-                    </span>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearFilter(key);
-                      }}
-                      className="text-secondary2 hover:text-red-700 font-bold leading-none"
-                    >
-                      ×
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <span>{key}</span>
-                    <svg
-                      className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
-                      viewBox="0 0 10 6"
-                      fill="none"
-                    >
-                      <path
-                        d="M1 1l4 4 4-4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </>
-                )}
+                {label}
               </button>
-            );
-          })}
+            ))}
+            {activeFilterCount > 0 && (
+              <button
+                onClick={clearAllFilters}
+                className="ml-auto text-sm text-secondary2 hover:text-red-700 cursor-pointer bg-transparent border-0 font-medium shrink-0"
+              >
+                Xóa tất cả ({activeFilterCount})
+              </button>
+            )}
+          </div>
 
-          {activeFilterCount > 0 && (
-            <button
-              onClick={clearAllFilters}
-              className="ml-auto text-sm text-secondary2 hover:text-red-700 cursor-pointer bg-transparent border-0 font-medium shrink-0"
-            >
-              Xóa tất cả ({activeFilterCount})
-            </button>
+          {/* Spec filter row */}
+          {specKeys.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
+              {specKeys.map((key) => {
+                const isSelected = !!selectedFilters[key];
+                const isOpen = openFilterKey === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setOpenFilterKey(isOpen ? null : key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border font-medium transition-all cursor-pointer shrink-0 ${
+                      isSelected
+                        ? "bg-red-50 text-secondary2 border-secondary2"
+                        : isOpen
+                          ? "bg-gray-100 text-gray-700 border-gray-400"
+                          : "bg-white text-gray-600 border-gray-300 hover:border-gray-400 hover:text-gray-800"
+                    }`}
+                  >
+                    {isSelected ? (
+                      <>
+                        <span className="font-semibold">
+                          {key}: {selectedFilters[key]}
+                        </span>
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearFilter(key);
+                          }}
+                          className="text-secondary2 hover:text-red-700 font-bold leading-none"
+                        >
+                          ×
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{key}</span>
+                        <svg
+                          className={`w-3 h-3 text-gray-400 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                          viewBox="0 0 10 6"
+                          fill="none"
+                        >
+                          <path
+                            d="M1 1l4 4 4-4"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -415,9 +473,9 @@ const AllProductsPage = () => {
         )}
       </div>
 
-      {/* Active filter chips */}
+      {/* Desktop active filter chips */}
       {specFilters.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="hidden md:flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-500">Đang lọc:</span>
           {specFilters.map(({ key, value }) => (
             <span
@@ -434,6 +492,144 @@ const AllProductsPage = () => {
             </span>
           ))}
         </div>
+      )}
+
+      {/* ===== MOBILE BOTTOM SHEET DRAWER ===== */}
+      {mobileDrawerOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 z-40 md:hidden"
+            onClick={() => setMobileDrawerOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="fixed inset-x-0 bottom-0 z-50 md:hidden bg-white rounded-t-2xl shadow-2xl flex flex-col animate-fade-in-up max-h-[80vh]">
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <span className="text-base font-semibold text-gray-900">
+                Bộ lọc & Sắp xếp
+              </span>
+              <button
+                onClick={() => setMobileDrawerOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 cursor-pointer bg-transparent border-0 text-gray-500 text-xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto px-5 py-4 flex flex-col gap-5">
+              {/* Sort section */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  Sắp xếp theo giá
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {SORT_OPTIONS.map(({ label, val }) => (
+                    <button
+                      key={val}
+                      onClick={() => setPriceSort(val)}
+                      className={`px-4 py-2 rounded-xl text-sm border font-medium transition-all cursor-pointer ${
+                        priceSort === val
+                          ? "bg-secondary2 text-white border-secondary2"
+                          : "bg-gray-50 text-gray-700 border-gray-200"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Spec filter sections */}
+              {specKeys.map((key) => (
+                <div key={key}>
+                  <button
+                    onClick={() =>
+                      setMobileOpenKey(mobileOpenKey === key ? null : key)
+                    }
+                    className="w-full flex items-center justify-between py-1 cursor-pointer bg-transparent border-0"
+                  >
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      {key}
+                      {selectedFilters[key] && (
+                        <span className="ml-2 text-secondary2 normal-case font-normal">
+                          ({selectedFilters[key]})
+                        </span>
+                      )}
+                    </p>
+                    <svg
+                      className={`w-4 h-4 text-gray-400 transition-transform ${mobileOpenKey === key ? "rotate-180" : ""}`}
+                      viewBox="0 0 10 6"
+                      fill="none"
+                    >
+                      <path
+                        d="M1 1l4 4 4-4"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  {mobileOpenKey === key && (
+                    <div className="flex flex-wrap gap-2 mt-2 animate-fade-in-down">
+                      <button
+                        onClick={() => clearFilter(key)}
+                        className={`px-3 py-1.5 rounded-xl text-sm border cursor-pointer transition-all font-medium ${
+                          !selectedFilters[key]
+                            ? "bg-secondary2 text-white border-secondary2"
+                            : "bg-gray-50 text-gray-600 border-gray-200"
+                        }`}
+                      >
+                        Tất cả
+                      </button>
+                      {specValueMap[key].map((val) => (
+                        <button
+                          key={val}
+                          onClick={() => toggleFilter(key, val)}
+                          className={`px-3 py-1.5 rounded-xl text-sm border cursor-pointer transition-all font-medium ${
+                            selectedFilters[key] === val
+                              ? "bg-secondary2 text-white border-secondary2"
+                              : "bg-gray-50 text-gray-600 border-gray-200"
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-4 border-t border-gray-100 flex gap-3">
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => {
+                    clearAllFilters();
+                    setMobileDrawerOpen(false);
+                  }}
+                  className="flex-1 h-11 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 cursor-pointer bg-white"
+                >
+                  Xóa tất cả
+                </button>
+              )}
+              <button
+                onClick={() => setMobileDrawerOpen(false)}
+                className="flex-1 h-11 rounded-xl bg-secondary2 text-white text-sm font-semibold cursor-pointer border-0"
+              >
+                Xem {products.length > 0 ? `${products.length}+` : ""} sản phẩm
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Product grid */}

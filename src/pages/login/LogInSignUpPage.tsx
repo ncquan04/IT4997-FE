@@ -21,6 +21,10 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    setError("");
+  }, [props.action]);
+
   const { login, register, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,7 +77,9 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
       setError("");
       await login(email, password);
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      const message =
+        err?.response?.data?.message || err?.message || "Đăng nhập thất bại";
+      setError(message);
     }
   };
 
@@ -99,7 +105,9 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
       });
       await login(email, password);
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      const message =
+        err?.response?.data?.message || err?.message || "Đăng ký thất bại";
+      setError(message);
     }
   };
 
@@ -116,39 +124,34 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
     <PageTransition>
       <main
         role="main"
-        className="w-full h-full pt-12 pb-12 pl-6 pr-6 flex flex-row justify-between items-center overflow-hidden"
+        className="w-full min-h-screen flex items-center justify-center bg-gray-50 md:bg-white px-4 py-12 md:px-0 md:py-0 overflow-hidden"
       >
         <AnimatePresence mode="wait">
-          <motion.aside
-            key={props.action + "-aside"}
-            initial={{ x: props.action === "login" ? -100 : 100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: props.action === "login" ? -100 : 100, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-1/2 h-full flex flex-col justify-center items-center gap-6"
-            aria-label="Branding"
+          {/* ── Mobile: centered card ── */}
+          <motion.div
+            key={props.action + "-mobile"}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.35 }}
+            className="md:hidden w-full max-w-md bg-white rounded-2xl shadow-lg px-8 py-10 flex flex-col gap-6"
           >
-            <figure className="w-full flex justify-center">
-              <img src="/icon.jpg" alt="Apex logo" className="w-1/2 h-auto" />
-            </figure>
-          </motion.aside>
-          <motion.section
-            key={props.action + "-section"}
-            initial={{ x: props.action === "login" ? 100 : -100, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: props.action === "login" ? 100 : -100, opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-1/2 pr-24 h-full flex flex-col justify-center items-center gap-12"
-            aria-labelledby="auth-heading"
-          >
-            <Header action={props.action} />
+            <div className="flex justify-center">
+              <img
+                src="/icon.jpg"
+                alt="Apex logo"
+                className="w-16 h-16 object-contain rounded-xl"
+              />
+            </div>
+            <Header action={props.action} variant="card" />
             <form
-              className="w-full flex flex-col gap-8"
+              className="flex flex-col gap-5"
               onSubmit={handleSubmit}
               noValidate
             >
               <InfoSection
                 action={props.action}
+                variant="card"
                 email={email}
                 setEmail={setEmail}
                 password={password}
@@ -160,9 +163,14 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
                 dateOfBirth={dateOfBirth}
                 setDateOfBirth={setDateOfBirth}
               />
-              {error && <p className="text-button2 text-center">{error}</p>}
+              {error && (
+                <p className="text-sm text-red-500 text-center -mt-1">
+                  {error}
+                </p>
+              )}
               <ActionSection
                 action={props.action}
+                variant="card"
                 handleLogIn={() => handleLogin(email, password)}
                 handleSignUp={() =>
                   handleSignUp(
@@ -175,7 +183,70 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
                 }
               />
             </form>
-          </motion.section>
+          </motion.div>
+
+          {/* ── Desktop: original two-column layout ── */}
+          <div className="hidden md:flex w-full h-screen">
+            <motion.aside
+              key={props.action + "-aside"}
+              initial={{ x: props.action === "login" ? -100 : 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: props.action === "login" ? -100 : 100, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="w-1/2 h-full flex flex-col justify-center items-center gap-6"
+              aria-label="Branding"
+            >
+              <figure className="w-full flex justify-center">
+                <img src="/icon.jpg" alt="Apex logo" className="w-1/2 h-auto" />
+              </figure>
+            </motion.aside>
+            <motion.section
+              key={props.action + "-section"}
+              initial={{ x: props.action === "login" ? 100 : -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: props.action === "login" ? 100 : -100, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="w-1/2 pr-24 h-full flex flex-col justify-center items-center gap-12"
+              aria-labelledby="auth-heading"
+            >
+              <Header action={props.action} variant="desktop" />
+              <form
+                className="w-full flex flex-col gap-8"
+                onSubmit={handleSubmit}
+                noValidate
+              >
+                <InfoSection
+                  action={props.action}
+                  variant="desktop"
+                  email={email}
+                  setEmail={setEmail}
+                  password={password}
+                  setPassword={setPassword}
+                  username={username}
+                  setUsername={setUsername}
+                  phoneNumber={phoneNumber}
+                  setPhoneNumber={setPhoneNumber}
+                  dateOfBirth={dateOfBirth}
+                  setDateOfBirth={setDateOfBirth}
+                />
+                {error && <p className="text-button2 text-center">{error}</p>}
+                <ActionSection
+                  action={props.action}
+                  variant="desktop"
+                  handleLogIn={() => handleLogin(email, password)}
+                  handleSignUp={() =>
+                    handleSignUp(
+                      username,
+                      email,
+                      password,
+                      phoneNumber,
+                      dateOfBirth,
+                    )
+                  }
+                />
+              </form>
+            </motion.section>
+          </div>
         </AnimatePresence>
       </main>
     </PageTransition>

@@ -2,6 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 interface InfoSectionProps {
   action: "login" | "signup";
+  variant?: "card" | "desktop";
   email: string;
   setEmail: Dispatch<SetStateAction<string>>;
   password: string;
@@ -16,9 +17,13 @@ interface InfoSectionProps {
 
 const InfoSection = (props: InfoSectionProps) => {
   const isSignup = props.action === "signup";
+  const isCard = props.variant === "card";
+  const inputClass = isCard
+    ? "w-full h-11 px-4 rounded-xl border border-gray-200 bg-gray-50 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-secondary2 focus:bg-white transition-colors"
+    : "border-b border-text2 p-2 text-text2 focus:outline-none w-full";
   return (
     <fieldset
-      className="w-full flex flex-col gap-4"
+      className="w-full flex flex-col gap-3"
       aria-describedby="auth-helper"
     >
       <legend className="sr-only">
@@ -33,9 +38,9 @@ const InfoSection = (props: InfoSectionProps) => {
             id="username"
             name="username"
             type="text"
-            placeholder="Name"
+            placeholder="Họ và tên"
             autoComplete="name"
-            className="border-b border-text2 p-2 text-text2 focus:outline-none w-full"
+            className={inputClass}
             value={props.username}
             onChange={(e) =>
               props.setUsername && props.setUsername(e.target.value)
@@ -48,9 +53,9 @@ const InfoSection = (props: InfoSectionProps) => {
             id="phoneNumber"
             name="phoneNumber"
             type="tel"
-            placeholder="Phone Number"
+            placeholder="Số điện thoại"
             autoComplete="tel"
-            className="border-b border-text2 p-2 text-text2 focus:outline-none w-full"
+            className={inputClass}
             value={props.phoneNumber}
             onChange={(e) =>
               props.setPhoneNumber && props.setPhoneNumber(e.target.value)
@@ -63,8 +68,7 @@ const InfoSection = (props: InfoSectionProps) => {
             id="dateOfBirth"
             name="dateOfBirth"
             type="date"
-            placeholder="Date of Birth"
-            className="border-b border-text2 p-2 text-text2 focus:outline-none w-full"
+            className={inputClass}
             value={props.dateOfBirth}
             onChange={(e) =>
               props.setDateOfBirth && props.setDateOfBirth(e.target.value)
@@ -81,7 +85,7 @@ const InfoSection = (props: InfoSectionProps) => {
         type="email"
         placeholder="Email"
         autoComplete={isSignup ? "email" : "username"}
-        className="border-b border-text2 p-2 text-text2 focus:outline-none w-full"
+        className={inputClass}
         value={props.email}
         onChange={(e) => props.setEmail && props.setEmail(e.target.value)}
         required
@@ -93,9 +97,9 @@ const InfoSection = (props: InfoSectionProps) => {
         id="password"
         name="password"
         type="password"
-        placeholder="Password"
+        placeholder="Mật khẩu"
         autoComplete={isSignup ? "new-password" : "current-password"}
-        className="border-b border-text2 p-2 text-text2 focus:outline-none w-full"
+        className={inputClass}
         value={props.password}
         onChange={(e) => props.setPassword && props.setPassword(e.target.value)}
         required
