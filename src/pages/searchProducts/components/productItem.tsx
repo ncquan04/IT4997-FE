@@ -41,9 +41,18 @@ const SearchItemList = ({
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full p-[20px]">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
+          const delay = (index % 20) * 50;
 
           return (
-            <div key={item._id} ref={isLast ? lastItemRef : undefined}>
+            <div
+              key={item._id}
+              ref={isLast ? lastItemRef : undefined}
+              className="animate-fade-in-up"
+              style={{
+                animationDelay: `${delay}ms`,
+                animationFillMode: "both",
+              }}
+            >
               <ItemCard item={item} />
             </div>
           );
@@ -51,7 +60,12 @@ const SearchItemList = ({
       </div>
 
       {isLoading && (
-        <p className="text-center py-4 text-gray-500">Đang tải thêm...</p>
+        <div className="flex justify-center py-6">
+          <div className="relative w-8 h-8">
+            <div className="absolute w-full h-full border-4 border-gray-100 rounded-full"></div>
+            <div className="absolute w-full h-full border-4 border-red-500 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+        </div>
       )}
 
       {!hasMore && items.length > 0 && (

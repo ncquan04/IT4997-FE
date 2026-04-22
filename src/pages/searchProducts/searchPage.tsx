@@ -9,6 +9,7 @@ import searchAsync from "../../redux/async-thunk/search.thunk";
 import SearchItemList from "./components/productItem";
 import NotFoundPage from "../notFound/NotFoundPage";
 import categoriesAync from "../../redux/async-thunk/categories.thunk";
+import LoadingScreen from "../../components/common/LoadingScreen";
 
 const SearchPage = () => {
   const dispatch = useAppDispatch();
@@ -39,7 +40,7 @@ const SearchPage = () => {
     }
     if (!q && !categoryId) return;
     dispatch(searchAsync.searchProducts(buildPayload(1)));
-  }, [q, categoryId]);
+  }, [q, categoryId, all]);
 
   useEffect(() => {
     if (categories.length === 0) {
@@ -57,6 +58,11 @@ const SearchPage = () => {
 
   const hasMore = page! < totalPages;
 
+  // Đang chờ fetch lần đầu hoặc đang loading
+  if (isLoading || (page === 0 && (!!q || !!categoryId || !!all))) {
+    return <LoadingScreen />;
+  }
+
   if (products.length === 0) {
     return <NotFoundPage />;
   }
@@ -64,8 +70,14 @@ const SearchPage = () => {
   return (
     <div className="max-w-[1024px] mx-auto w-full">
       <div className="mb-3 text-sm text-gray-600 py-[20px]">
-        Kết quả tìm kiếm cho{" "}
-        <span className="font-medium text-gray-900">"{q}"</span>
+        {all ? (
+          <span className="font-medium text-gray-900">Tất cả sản phẩm</span>
+        ) : (
+          <>
+            Kết quả tìm kiếm cho{" "}
+            <span className="font-medium text-gray-900">"{q}"</span>
+          </>
+        )}
       </div>
       <div className="flex flex-col gap-6">
         <SearchItemList

@@ -35,6 +35,7 @@ import AttendanceManagementPage from "../pages/admin/AttendanceManagementPage";
 import PayrollManagementPage from "../pages/admin/PayrollManagementPage";
 import BranchManagementPage from "../pages/admin/BranchManagementPage";
 import CategoryPage from "../pages/category/CategoryPage";
+import AllProductsPage from "../pages/allProducts/AllProductsPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { UserRole } from "../shared/models/user-model";
@@ -74,6 +75,7 @@ export const AppRoutes = {
   ADMIN_PAYROLL: "/admin/payroll",
   ADMIN_BRANCHES: "/admin/branches",
   CATEGORY: "/categories/:categoryId",
+  ALL_PRODUCTS: "/products",
 };
 
 const STAFF_ROLES = new Set<UserRole>([
@@ -220,6 +222,14 @@ const RootNavigation = () => {
             element={
               <Mainlayout>
                 <CategoryPage />
+              </Mainlayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ALL_PRODUCTS}
+            element={
+              <Mainlayout>
+                <AllProductsPage />
               </Mainlayout>
             }
           />

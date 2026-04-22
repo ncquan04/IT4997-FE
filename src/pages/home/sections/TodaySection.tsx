@@ -20,7 +20,7 @@ const TodaySection = (props: TodaySectionProps) => {
       <CommonButton
         label="View All Products"
         onClick={() => {
-          navigate("/search?all=true");
+          navigate("/products");
         }}
         style={{ alignSelf: "center" }}
         className="w-full sm:w-64 md:w-56 h-12 md:h-14"
