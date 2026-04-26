@@ -44,7 +44,9 @@ const WarrantyTable = ({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {isLoading ? (
-        <div className="flex items-center justify-center py-20 text-gray-400">Đang tải...</div>
+        <div className="flex items-center justify-center py-20 text-gray-400">
+          Đang tải...
+        </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
           <svg
@@ -63,75 +65,148 @@ const WarrantyTable = ({
           <span>Không có phiếu bảo hành nào.</span>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm" style={{ minWidth: "860px" }}>
-            <thead>
-              <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
-                <th className="px-4 py-3 text-left">IMEI / Serial</th>
-                <th className="px-4 py-3 text-left">Khách hàng</th>
-                <th className="px-4 py-3 text-left">Sản phẩm</th>
-                {!isBranchScoped && <th className="px-4 py-3 text-left">Chi nhánh</th>}
-                <th className="px-4 py-3 text-center">Trạng thái</th>
-                <th className="px-4 py-3 text-left">Ngày tiếp nhận</th>
-                <th className="px-4 py-3 text-center">Chi tiết</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {items.map((item) => {
-                const meta = STATUS_META[item.status] ?? {
-                  label: String(item.status),
-                  color: "bg-gray-100 text-gray-600",
-                };
-                return (
-                  <tr key={item._id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-700">
+        <>
+          {/* ── Mobile card list (< md) ── */}
+          <div className="block md:hidden divide-y divide-gray-100">
+            {items.map((item) => {
+              const meta = STATUS_META[item.status] ?? {
+                label: String(item.status),
+                color: "bg-gray-100 text-gray-600",
+              };
+              return (
+                <div key={item._id} className="p-4 space-y-2">
+                  {/* IMEI + status */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs text-gray-700 bg-gray-50 px-2 py-0.5 rounded">
                       {item.imeiOrSerial}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{getItemCustomer(item)}</td>
-                    <td className="px-4 py-3 text-gray-600 max-w-50 truncate">
-                      {getItemProduct(item)}
-                    </td>
-                    {!isBranchScoped && (
-                      <td className="px-4 py-3 text-gray-600">{getItemBranch(item)}</td>
-                    )}
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${meta.color}`}
+                    </span>
+                    <span
+                      className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${meta.color}`}
+                    >
+                      {meta.label}
+                    </span>
+                  </div>
+
+                  {/* Product */}
+                  <div className="text-sm font-medium text-gray-800 line-clamp-2">
+                    {getItemProduct(item)}
+                  </div>
+
+                  {/* Customer + branch + date */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-500">
+                    <span>KH: {getItemCustomer(item)}</span>
+                    {!isBranchScoped && <span>CN: {getItemBranch(item)}</span>}
+                    <span>Tiếp nhận: {formatDate(item.createdAt)}</span>
+                  </div>
+
+                  {/* View button */}
+                  <div className="pt-1">
+                    <button
+                      onClick={() => onOpenDetail(item._id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors text-xs font-medium"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       >
-                        {meta.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
-                      {formatDate(item.createdAt)}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => onOpenDetail(item._id)}
-                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
-                        title="Xem chi tiết"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      Chi tiết
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Desktop table (≥ md) ── */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm" style={{ minWidth: "860px" }}>
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                  <th className="px-4 py-3 text-left">IMEI / Serial</th>
+                  <th className="px-4 py-3 text-left">Khách hàng</th>
+                  <th className="px-4 py-3 text-left">Sản phẩm</th>
+                  {!isBranchScoped && (
+                    <th className="px-4 py-3 text-left">Chi nhánh</th>
+                  )}
+                  <th className="px-4 py-3 text-center">Trạng thái</th>
+                  <th className="px-4 py-3 text-left">Ngày tiếp nhận</th>
+                  <th className="px-4 py-3 text-center">Chi tiết</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {items.map((item) => {
+                  const meta = STATUS_META[item.status] ?? {
+                    label: String(item.status),
+                    color: "bg-gray-100 text-gray-600",
+                  };
+                  return (
+                    <tr
+                      key={item._id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-4 py-3 font-mono text-xs text-gray-700">
+                        {item.imeiOrSerial}
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">
+                        {getItemCustomer(item)}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 max-w-50 truncate">
+                        {getItemProduct(item)}
+                      </td>
+                      {!isBranchScoped && (
+                        <td className="px-4 py-3 text-gray-600">
+                          {getItemBranch(item)}
+                        </td>
+                      )}
+                      <td className="px-4 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${meta.color}`}
                         >
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                          {meta.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 text-xs">
+                        {formatDate(item.createdAt)}
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => onOpenDetail(item._id)}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition-colors"
+                          title="Xem chi tiết"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="15"
+                            height="15"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {totalPages > 1 && (

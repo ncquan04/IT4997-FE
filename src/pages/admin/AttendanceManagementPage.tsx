@@ -11,10 +11,14 @@ const AttendanceManagementPage = () => {
   const {
     user,
     isAdmin,
-    month, setMonth,
-    year, setYear,
-    filterBranch, setFilterBranch,
-    filterEmployee, setFilterEmployee,
+    month,
+    setMonth,
+    year,
+    setYear,
+    filterBranch,
+    setFilterBranch,
+    filterEmployee,
+    setFilterEmployee,
     branches,
     employees,
     records,
@@ -23,7 +27,9 @@ const AttendanceManagementPage = () => {
   } = useAttendanceData();
 
   const [showModal, setShowModal] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<IAttendanceRecord | undefined>(undefined);
+  const [editingRecord, setEditingRecord] = useState<
+    IAttendanceRecord | undefined
+  >(undefined);
 
   const branchIdForModal = filterBranch || user?.branchId || "";
 
@@ -35,8 +41,10 @@ const AttendanceManagementPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Attendance Tracking</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Attendance Tracking
+          </h1>
           <button
             onClick={() => {
               setEditingRecord(undefined);

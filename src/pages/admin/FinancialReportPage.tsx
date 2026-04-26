@@ -22,7 +22,9 @@ const FinancialReportPage = () => {
   const [toDate, setToDate] = useState<string>(
     () => new Date().toISOString().split("T")[0],
   );
-  const [granularity, setGranularity] = useState<"day" | "month" | "year">("month");
+  const [granularity, setGranularity] = useState<"day" | "month" | "year">(
+    "month",
+  );
 
   const params: FinancialReportParams = {
     from: fromDate ? new Date(fromDate).getTime() : undefined,
@@ -48,7 +50,7 @@ const FinancialReportPage = () => {
         </p>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-xl px-5 py-3 mb-6 flex items-center gap-4">
+      <div className="bg-white border border-gray-100 rounded-xl px-5 py-3 mb-6 flex flex-wrap items-center gap-4">
         <span className="text-sm font-medium text-gray-600">Date Range:</span>
         <DateRangePicker
           from={fromDate}

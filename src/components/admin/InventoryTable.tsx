@@ -35,7 +35,67 @@ const InventoryTable = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* ── Mobile card list (< md) ── */}
+      <div className="block md:hidden divide-y divide-gray-100">
+        {items.length === 0 ? (
+          <div className="p-10 text-center text-gray-400">
+            No inventory records found.
+          </div>
+        ) : (
+          items.map((item, index) => (
+            <motion.div
+              key={item._id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25, delay: index * 0.03 }}
+              className="p-4 space-y-2"
+            >
+              {/* Product + variant */}
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-semibold text-gray-800 text-sm truncate">
+                    {item.product?.title ?? "Unknown product"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {item.product?.brand ?? "-"}
+                  </p>
+                </div>
+                <span
+                  className={`shrink-0 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    item.quantity > 0
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  Qty: {item.quantity}
+                </span>
+              </div>
+
+              {/* Variant */}
+              <div className="text-sm text-gray-700">
+                {item.variant?.variantName ?? "Unknown variant"}
+                <span className="ml-2 text-xs text-gray-400">
+                  SKU: {item.variant?.sku ?? "-"}
+                </span>
+              </div>
+
+              {/* Branch + price + date */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                <span>📍 {item.branch?.name ?? "-"}</span>
+                <span className="font-semibold text-gray-800">
+                  {formatPrice(item.variant?.salePrice ?? item.variant?.price)}
+                </span>
+                <span>
+                  {new Date(item.updatedAt).toLocaleDateString("vi-VN")}
+                </span>
+              </div>
+            </motion.div>
+          ))
+        )}
+      </div>
+
+      {/* ── Desktop table (≥ md) ── */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">

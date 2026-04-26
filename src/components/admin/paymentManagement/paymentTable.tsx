@@ -115,114 +115,178 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-gray-50 border-b border-gray-100">
-            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
-              OrderId
-            </th>
-
-            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
-              Customer
-            </th>
-            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
-              Sum Price
-            </th>
-            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
-              Payment method
-            </th>
-            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider text-center">
-              Order status
-            </th>
-            <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {orders.map((order) => {
-            const { payment } = order;
-
-            return (
-              <tr
-                key={order._id}
-                className="border-b border-gray-100 last:border-b hover:bg-gray-50"
-              >
-                <td className="p-5">{order._id}</td>
-
-                <td className="p-5  text-center">
-                  {order.userName || order.numberPhone || order.userId}
-                </td>
-
-                <td className="p-5 text-center font-medium">
+      {/* ── Mobile card list (< md) ── */}
+      <div className="block md:hidden divide-y divide-gray-100">
+        {orders.map((order) => {
+          const { payment } = order;
+          return (
+            <div key={order._id} className="p-4 space-y-2">
+              {/* Order ID + price */}
+              <div className="flex items-start justify-between gap-2">
+                <span className="font-mono text-xs text-gray-500 break-all">
+                  {order._id}
+                </span>
+                <span className="font-bold text-gray-900 text-sm whitespace-nowrap">
                   {payment.totalMoney.toLocaleString()} ₫
-                </td>
+                </span>
+              </div>
 
-                <td className="p-5  text-center">{payment.method}</td>
+              {/* Customer */}
+              <p className="text-sm text-gray-700">
+                {order.userName || order.numberPhone || String(order.userId)}
+              </p>
 
-                <td className="p-5 text-center">
-                  <span
-                    className={`
-                                            inline-block px-2 py-1 rounded text-xs font-medium
-                                            ${ORDER_STATUS_COLOR[order.statusOrder]}
-                                        `}
+              {/* Badges row */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded capitalize">
+                  {payment.method}
+                </span>
+                <span
+                  className={`inline-block px-2 py-1 rounded text-xs font-medium ${ORDER_STATUS_COLOR[order.statusOrder]}`}
+                >
+                  {ORDER_STATUS_LABEL[order.statusOrder] ?? order.statusOrder}
+                </span>
+                <span
+                  className={`inline-block px-2 py-1 rounded text-xs ${
+                    payment.status === STATUS_PAYMENT.PAID
+                      ? "bg-green-100 text-green-700"
+                      : payment.status === STATUS_PAYMENT.REFUNDED
+                        ? "bg-red-100 text-red-700"
+                        : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {PAYMENT_STATUS_LABEL[payment.status] ?? payment.status}
+                </span>
+              </div>
+
+              {/* Actions */}
+              {canRefund(order) && (
+                <div className="pt-1">
+                  <button
+                    onClick={() => setOpenOrderId(order._id)}
+                    className="px-3 py-1.5 text-xs font-medium bg-red-500 text-white rounded hover:bg-red-600 transition"
                   >
-                    {ORDER_STATUS_LABEL[order.statusOrder] ?? order.statusOrder}
-                  </span>
-                </td>
+                    Refund
+                  </button>
+                  {openOrderId === order._id && (
+                    <RefundModal
+                      open={true}
+                      order={order}
+                      onClose={() => setOpenOrderId(null)}
+                      onSubmit={(data: IRefundReport) => handleRefund?.(data)}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
 
-                <td className="p-5">
-                  <div className="flex justify-center items-center gap-2 max-w-[240px] mx-auto">
+      {/* ── Desktop table (≥ md) ── */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
+                OrderId
+              </th>
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
+                Customer
+              </th>
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
+                Sum Price
+              </th>
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
+                Payment method
+              </th>
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider text-center">
+                Order status
+              </th>
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {orders.map((order) => {
+              const { payment } = order;
+
+              return (
+                <tr
+                  key={order._id}
+                  className="border-b border-gray-100 last:border-b hover:bg-gray-50"
+                >
+                  <td className="p-5">{order._id}</td>
+
+                  <td className="p-5 text-center">
+                    {order.userName || order.numberPhone || order.userId}
+                  </td>
+
+                  <td className="p-5 text-center font-medium">
+                    {payment.totalMoney.toLocaleString()} ₫
+                  </td>
+
+                  <td className="p-5 text-center">{payment.method}</td>
+
+                  <td className="p-5 text-center">
                     <span
                       className={`
-                                                inline-block px-2 py-1 rounded text-xs
-                                                ${
-                                                  payment.status ===
-                                                  STATUS_PAYMENT.PAID
-                                                    ? "bg-green-100 text-green-700"
-                                                    : payment.status ===
-                                                        STATUS_PAYMENT.REFUNDED
-                                                      ? "bg-red-100 text-red-700"
-                                                      : "bg-gray-100 text-gray-600"
-                                                }
-                                            `}
+                        inline-block px-2 py-1 rounded text-xs font-medium
+                        ${ORDER_STATUS_COLOR[order.statusOrder]}
+                      `}
                     >
-                      {PAYMENT_STATUS_LABEL[payment.status] ?? payment.status}
+                      {ORDER_STATUS_LABEL[order.statusOrder] ??
+                        order.statusOrder}
                     </span>
+                  </td>
 
-                    {canRefund(order) && (
-                      <>
-                        <button
-                          onClick={() => setOpenOrderId(order._id)}
-                          className="
-                                                px-3 py-1 text-xs font-medium
-                                                bg-red-500 text-white rounded
-                                                hover:bg-red-600
-                                                transition
-                                                "
-                        >
-                          Refund
-                        </button>
-                        {openOrderId === order._id && (
-                          <RefundModal
-                            open={true}
-                            order={order}
-                            onClose={() => setOpenOrderId(null)}
-                            onSubmit={(data: IRefundReport) => {
-                              handleRefund?.(data);
-                            }}
-                          />
-                        )}
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <td className="p-5">
+                    <div className="flex justify-center items-center gap-2 max-w-[240px] mx-auto">
+                      <span
+                        className={`
+                          inline-block px-2 py-1 rounded text-xs
+                          ${
+                            payment.status === STATUS_PAYMENT.PAID
+                              ? "bg-green-100 text-green-700"
+                              : payment.status === STATUS_PAYMENT.REFUNDED
+                                ? "bg-red-100 text-red-700"
+                                : "bg-gray-100 text-gray-600"
+                          }
+                        `}
+                      >
+                        {PAYMENT_STATUS_LABEL[payment.status] ?? payment.status}
+                      </span>
+
+                      {canRefund(order) && (
+                        <>
+                          <button
+                            onClick={() => setOpenOrderId(order._id)}
+                            className="px-3 py-1 text-xs font-medium bg-red-500 text-white rounded hover:bg-red-600 transition"
+                          >
+                            Refund
+                          </button>
+                          {openOrderId === order._id && (
+                            <RefundModal
+                              open={true}
+                              order={order}
+                              onClose={() => setOpenOrderId(null)}
+                              onSubmit={(data: IRefundReport) =>
+                                handleRefund?.(data)
+                              }
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

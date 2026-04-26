@@ -33,7 +33,12 @@ const PayrollManagementPage = () => {
   const handleExport = async (format: "xlsx" | "csv") => {
     setExporting(true);
     try {
-      await exportPayroll({ month, year, branchId: filterBranch || undefined, format });
+      await exportPayroll({
+        month,
+        year,
+        branchId: filterBranch || undefined,
+        format,
+      });
     } catch (e) {
       console.error("Export failed", e);
     } finally {
@@ -44,9 +49,11 @@ const PayrollManagementPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Payroll Management</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Payroll Management
+          </h1>
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleExport("xlsx")}
               disabled={exporting || records.length === 0}
@@ -73,32 +80,42 @@ const PayrollManagementPage = () => {
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Month</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Month
+            </label>
             <select
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
               {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                <option key={m} value={m}>Month {m}</option>
+                <option key={m} value={m}>
+                  Month {m}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Year</label>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Year
+            </label>
             <select
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
             >
               {[2024, 2025, 2026, 2027].map((y) => (
-                <option key={y} value={y}>{y}</option>
+                <option key={y} value={y}>
+                  {y}
+                </option>
               ))}
             </select>
           </div>
           {isAdmin && (
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Branch
+              </label>
               <select
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm"
                 value={filterBranch}
@@ -106,7 +123,9 @@ const PayrollManagementPage = () => {
               >
                 <option value="">All</option>
                 {branches.map((b) => (
-                  <option key={b._id} value={b._id}>{b.name}</option>
+                  <option key={b._id} value={b._id}>
+                    {b.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -119,13 +138,17 @@ const PayrollManagementPage = () => {
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
               Total Employees
             </div>
-            <div className="text-2xl font-bold text-gray-800">{records.length}</div>
+            <div className="text-2xl font-bold text-gray-800">
+              {records.length}
+            </div>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
             <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
               Total Net Salary
             </div>
-            <div className="text-2xl font-bold text-button2">{formatCurrency(totalActual)}</div>
+            <div className="text-2xl font-bold text-button2">
+              {formatCurrency(totalActual)}
+            </div>
           </div>
         </div>
 

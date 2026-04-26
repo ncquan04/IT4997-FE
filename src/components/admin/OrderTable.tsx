@@ -124,7 +124,116 @@ const OrderTable: React.FC<OrderTableProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="overflow-x-auto">
+      {/* ── Mobile card list (< md) ── */}
+      <div className="block md:hidden divide-y divide-gray-100">
+        {orders.length === 0 ? (
+          <div className="p-10 text-center text-gray-400">No orders found.</div>
+        ) : (
+          orders.map((orderItem, index) => {
+            const order = orderItem as unknown as IOrderExtended;
+            return (
+              <motion.div
+                key={order._id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="p-4 space-y-2"
+              >
+                {/* Row 1: ID + date + total */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-sm font-semibold text-gray-800">
+                      #{order._id.slice(-6).toUpperCase()}
+                    </span>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {/* @ts-ignore */}
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString(
+                            "vi-VN",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )
+                        : ""}
+                    </p>
+                  </div>
+                  <span className="font-bold text-gray-900 text-sm whitespace-nowrap">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(order.sumPrice)}
+                  </span>
+                </div>
+
+                {/* Row 2: Customer */}
+                <div>
+                  <p className="text-sm font-medium text-gray-800">
+                    {orderItem.userId?.fullName || order.userName || "Guest"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {orderItem.userId?.email || order.numberPhone}
+                  </p>
+                </div>
+
+                {/* Row 3: Payment + Status badges */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-gray-700 capitalize bg-gray-100 px-2 py-0.5 rounded">
+                    {orderItem.payment?.method || "COD"}
+                  </span>
+                  {getPaymentStatusBadge(orderItem.payment?.status)}
+                  {getStatusBadge(order.statusOrder)}
+                </div>
+
+                {/* Row 4: Actions */}
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  {order.statusOrder === O.PROCESSING && onShipClick && (
+                    <button
+                      onClick={() => onShipClick(orderItem as any)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-medium hover:bg-indigo-700 transition-colors"
+                      disabled={isLoading}
+                    >
+                      🚚 Ship
+                    </button>
+                  )}
+                  {(ALLOWED_TRANSITIONS[order.statusOrder]?.length ?? 0) > 0 ? (
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value)
+                          onStatusChange?.(order._id, Number(e.target.value));
+                      }}
+                      className="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={isLoading}
+                    >
+                      <option value="" disabled>
+                        Change status…
+                      </option>
+                      {ALLOWED_TRANSITIONS[order.statusOrder].map(
+                        (nextStatus) => (
+                          <option key={nextStatus} value={nextStatus}>
+                            {STATUS_LABEL[nextStatus]}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  ) : (
+                    <span className="text-xs text-gray-400 italic">
+                      No actions
+                    </span>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })
+        )}
+      </div>
+
+      {/* ── Desktop table (≥ md) ── */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
@@ -264,6 +373,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
           </tbody>
         </table>
       </div>
+      {/* end desktop table */}
 
       {/* Pagination */}
       {totalPages > 1 && (
