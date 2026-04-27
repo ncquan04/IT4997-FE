@@ -17,7 +17,7 @@ export const DateRangePicker = ({
       <input
         type="date"
         value={from}
-        className="border border-gray-200 rounded px-2 py-1 text-sm"
+        className="border border-gray-200 rounded px-2 py-1 text-sm w-full sm:w-auto"
         onChange={(e) => onChange(e.target.value, to, granularity)}
       />
     </div>
@@ -26,7 +26,7 @@ export const DateRangePicker = ({
       <input
         type="date"
         value={to}
-        className="border border-gray-200 rounded px-2 py-1 text-sm"
+        className="border border-gray-200 rounded px-2 py-1 text-sm w-full sm:w-auto"
         onChange={(e) => onChange(from, e.target.value, granularity)}
       />
     </div>

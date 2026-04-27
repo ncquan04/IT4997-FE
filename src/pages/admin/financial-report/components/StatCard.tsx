@@ -13,10 +13,17 @@ interface StatCardProps {
   color?: keyof typeof colorMap;
 }
 
-export const StatCard = ({ label, value, sub, color = "blue" }: StatCardProps) => (
-  <div className={`border rounded-xl p-4 ${colorMap[color]}`}>
-    <p className="text-xs font-medium opacity-70 mb-1">{label}</p>
-    <p className="text-xl font-bold">{value}</p>
+export const StatCard = ({
+  label,
+  value,
+  sub,
+  color = "blue",
+}: StatCardProps) => (
+  <div className={`border rounded-xl p-3 sm:p-4 ${colorMap[color]}`}>
+    <p className="text-xs font-medium opacity-70 mb-1 leading-tight">{label}</p>
+    <p className="text-sm sm:text-base lg:text-xl font-bold break-all leading-tight">
+      {value}
+    </p>
     {sub && <p className="text-xs opacity-60 mt-0.5">{sub}</p>}
   </div>
 );

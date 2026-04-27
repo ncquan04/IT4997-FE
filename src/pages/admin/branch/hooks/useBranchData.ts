@@ -8,7 +8,9 @@ import {
   createBranch,
   updateBranch,
   deleteBranch,
+  addRentHistory,
   type BranchFormData,
+  type RentHistoryPayload,
 } from "../../../../services/api/api.branches";
 import {
   fetchEmployees,
@@ -24,7 +26,9 @@ export const useBranchData = () => {
   const [managers, setManagers] = useState<IEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingBranch, setEditingBranch] = useState<IBranchPopulated | null>(null);
+  const [editingBranch, setEditingBranch] = useState<IBranchPopulated | null>(
+    null,
+  );
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -76,7 +80,11 @@ export const useBranchData = () => {
   };
 
   const handleDelete = async (branch: IBranchPopulated) => {
-    if (!window.confirm(`Delete branch "${branch.name}"? This action cannot be undone.`))
+    if (
+      !window.confirm(
+        `Delete branch "${branch.name}"? This action cannot be undone.`,
+      )
+    )
       return;
     const ok = await deleteBranch(branch._id);
     if (ok) {
@@ -84,6 +92,21 @@ export const useBranchData = () => {
       loadData();
     } else {
       showToast("Failed to delete branch", "error");
+    }
+  };
+
+  const handleAddRentHistory = async (data: RentHistoryPayload) => {
+    if (!editingBranch) return;
+    const result = await addRentHistory(editingBranch._id, data);
+    if (result) {
+      showToast("Rent history entry added", "success");
+      // Refresh editingBranch in-place so history panel updates without closing modal
+      const updated = await fetchBranches();
+      const refreshed = updated.find((b) => b._id === editingBranch._id);
+      if (refreshed) setEditingBranch(refreshed);
+      setBranches(updated);
+    } else {
+      showToast("Failed to add rent history", "error");
     }
   };
 
@@ -99,5 +122,6 @@ export const useBranchData = () => {
     closeForm,
     handleFormSubmit,
     handleDelete,
+    handleAddRentHistory,
   };
 };

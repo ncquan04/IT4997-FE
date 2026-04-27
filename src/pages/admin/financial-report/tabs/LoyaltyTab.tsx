@@ -40,7 +40,7 @@ export const LoyaltyTab = ({ params }: { params: FinancialReportParams }) => {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="Points Issued"
           value={fmtNum(earnRow?.totalPoints ?? 0)}

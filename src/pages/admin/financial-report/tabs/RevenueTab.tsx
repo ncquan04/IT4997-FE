@@ -44,7 +44,9 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
       financialReportApi
         .getPayrollCost(params)
         .then((r) => setPayrollSummary(r.summary)),
-      financialReportApi.getRentCost().then((r) => setRentSummary(r.summary)),
+      financialReportApi
+        .getRentCost(params)
+        .then((r) => setRentSummary(r.summary)),
     ];
     if (isAdmin) {
       calls.push(
@@ -64,6 +66,7 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
   const totalOrders = timeData.reduce((s, d) => s + d.orderCount, 0);
   const totalPayroll = payrollSummary?.totalActualSalary ?? 0;
 
+  // Use period-accurate total from backend when available, fallback to estimation
   const months =
     params.from && params.to
       ? Math.max(
@@ -71,14 +74,16 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
           Math.round((params.to - params.from) / (30.44 * 24 * 60 * 60 * 1000)),
         )
       : 1;
-  const totalRent = (rentSummary?.totalActiveRentCost ?? 0) * months;
+  const totalRent =
+    rentSummary?.totalRentForPeriod ??
+    (rentSummary?.totalActiveRentCost ?? 0) * months;
 
   const netProfitAfterPayroll = totalProfit - totalPayroll;
   const netProfitAfterAll = netProfitAfterPayroll - totalRent;
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard label="Revenue" value={fmt(totalRevenue)} color="blue" />
         <StatCard label="Gross Profit" value={fmt(totalProfit)} color="green" />
         <StatCard
@@ -99,7 +104,7 @@ export const RevenueTab = ({ params }: { params: FinancialReportParams }) => {
           color="red"
           sub={`${rentSummary?.activeBranchCount ?? 0} active branches × ${months} month${months > 1 ? "s" : ""}`}
         />
-      <StatCard
+        <StatCard
           label="Net Profit"
           value={fmt(netProfitAfterAll)}
           color={netProfitAfterAll >= 0 ? "green" : "red"}

@@ -42,16 +42,20 @@ const FinancialReportPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Financial Reports</h1>
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 md:p-10">
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+          Financial Reports
+        </h1>
         <p className="text-sm text-gray-500 mt-1">
           Revenue, profit, inventory value, and key financial metrics
         </p>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-xl px-5 py-3 mb-6 flex flex-wrap items-center gap-4">
-        <span className="text-sm font-medium text-gray-600">Date Range:</span>
+      <div className="bg-white border border-gray-100 rounded-xl px-4 sm:px-5 py-3 mb-5 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4">
+        <span className="text-sm font-medium text-gray-600 shrink-0">
+          Date Range:
+        </span>
         <DateRangePicker
           from={fromDate}
           to={toDate}
@@ -60,12 +64,13 @@ const FinancialReportPage = () => {
         />
       </div>
 
-      <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
+      {/* Tab bar - scrollable on mobile */}
+      <div className="flex gap-1.5 mb-5 sm:mb-6 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`whitespace-nowrap px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors shrink-0 ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white shadow-sm"
                 : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"

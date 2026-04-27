@@ -16,6 +16,7 @@ const BranchManagementPage = () => {
     closeForm,
     handleFormSubmit,
     handleDelete,
+    handleAddRentHistory,
   } = useBranchData();
 
   return (
@@ -98,6 +99,9 @@ const BranchManagementPage = () => {
                 managers={managers}
                 onSubmit={handleFormSubmit}
                 onCancel={closeForm}
+                onAddRentHistory={
+                  editingBranch ? handleAddRentHistory : undefined
+                }
               />
             </motion.div>
           </div>

@@ -1,5 +1,8 @@
 import { Contacts } from "../../shared/contacts";
-import type { IBranch, IBranchPopulated } from "../../shared/models/branch-model";
+import type {
+  IBranch,
+  IBranchPopulated,
+} from "../../shared/models/branch-model";
 import { apiService } from "./index";
 
 const API_PATH = Contacts.API_CONFIG;
@@ -25,7 +28,9 @@ export const fetchBranches = async (isActive?: boolean) => {
 
 export const fetchBranchById = async (id: string) => {
   try {
-    return await apiService.get<IBranchPopulated>(API_PATH.BRANCH.GET_DETAIL(id).URL);
+    return await apiService.get<IBranchPopulated>(
+      API_PATH.BRANCH.GET_DETAIL(id).URL,
+    );
   } catch (error) {
     console.log("Fetch branch detail error: ", error);
     return null;
@@ -43,9 +48,15 @@ export const createBranch = async (data: BranchFormData) => {
   }
 };
 
-export const updateBranch = async (id: string, data: Partial<BranchFormData>) => {
+export const updateBranch = async (
+  id: string,
+  data: Partial<BranchFormData>,
+) => {
   try {
-    return await apiService.patch<IBranch>(API_PATH.BRANCH.UPDATE(id).URL, data);
+    return await apiService.patch<IBranch>(
+      API_PATH.BRANCH.UPDATE(id).URL,
+      data,
+    );
   } catch (error) {
     console.log("Update branch error: ", error);
     return null;
@@ -59,5 +70,26 @@ export const deleteBranch = async (id: string) => {
   } catch (error) {
     console.log("Delete branch error: ", error);
     return false;
+  }
+};
+
+export interface RentHistoryPayload {
+  amount: number;
+  effectiveFrom: string; // ISO date string "YYYY-MM-DD"
+  note?: string;
+}
+
+export const addRentHistory = async (
+  branchId: string,
+  data: RentHistoryPayload,
+) => {
+  try {
+    return await apiService.post<IBranch>(
+      API_PATH.BRANCH.ADD_RENT_HISTORY(branchId).URL,
+      data,
+    );
+  } catch (error) {
+    console.log("Add rent history error: ", error);
+    return null;
   }
 };

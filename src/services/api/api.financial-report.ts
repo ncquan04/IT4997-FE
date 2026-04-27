@@ -129,6 +129,13 @@ export interface RentCostSummary {
   totalActiveRentCost: number;
   branchCount: number;
   activeBranchCount: number;
+  totalRentForPeriod?: number;
+}
+
+export interface RentCostHistoryEntry {
+  amount: number;
+  effectiveFrom: string;
+  note?: string;
 }
 
 export interface RentCostBranchItem {
@@ -136,6 +143,7 @@ export interface RentCostBranchItem {
   branchName: string;
   rentCost: number;
   isActive: boolean;
+  rentCostHistory: RentCostHistoryEntry[];
 }
 
 // ─── API calls ───────────────────────────────────────────────────────────────
@@ -204,10 +212,12 @@ export const financialReportApi = {
   ): Promise<LoyaltySummary> =>
     apiService.get(`${BASE}/loyalty-summary`, { params: toParams(params) }),
 
-  getPayrollCost: async (params: FinancialReportParams & {
-    month?: number;
-    year?: number;
-  } = {}): Promise<{
+  getPayrollCost: async (
+    params: FinancialReportParams & {
+      month?: number;
+      year?: number;
+    } = {},
+  ): Promise<{
     summary: PayrollCostSummary;
     byBranch: PayrollCostBranchItem[];
     overTime: PayrollCostTimeItem[];
@@ -218,7 +228,9 @@ export const financialReportApi = {
     return apiService.get(`${BASE}/payroll-cost`, { params: p });
   },
 
-  getRentCost: async (params: FinancialReportParams = {}): Promise<{
+  getRentCost: async (
+    params: FinancialReportParams = {},
+  ): Promise<{
     summary: RentCostSummary;
     byBranch: RentCostBranchItem[];
   }> => apiService.get(`${BASE}/rent-cost`, { params: toParams(params) }),
