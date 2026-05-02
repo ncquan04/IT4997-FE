@@ -5,18 +5,33 @@ import { HORIZONTAL_PADDING_REM } from "../../constants";
 import JustForYou from "./components/JustForYou";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import { fetchWishlist } from "../../redux/async-thunk/wishlist.thunk";
+import { logEvent } from "../../utils/analytics";
 
 const WishlistPage = () => {
   const dispatch = useAppDispatch();
-  const { wishlistItems, isLoading } = useAppSelector((state) => state.wishlist);
+  const { wishlistItems, isLoading } = useAppSelector(
+    (state) => state.wishlist,
+  );
 
   useEffect(() => {
     const promise = dispatch(fetchWishlist());
     return () => {
-        promise.abort();
+      promise.abort();
     };
   }, [dispatch]);
-  
+
+  useEffect(() => {
+    if (!isLoading && wishlistItems.length > 0) {
+      logEvent("view_wishlist", {
+        itemCount: wishlistItems.length,
+        items: wishlistItems.slice(0, 10).map((p) => ({
+          productId: p._id,
+          title: p.title,
+        })),
+      });
+    }
+  }, [isLoading, wishlistItems.length]);
+
   return (
     <PageTransition>
       <main
@@ -33,11 +48,13 @@ const WishlistPage = () => {
               Wishlist ({wishlistItems.length})
             </h1>
           </div>
-          
+
           {wishlistItems.length > 0 ? (
-             <Wishlist products={wishlistItems} />
+            <Wishlist products={wishlistItems} />
           ) : (
-            !isLoading && <div className="text-center py-10">Your wishlist is empty.</div>
+            !isLoading && (
+              <div className="text-center py-10">Your wishlist is empty.</div>
+            )
           )}
         </section>
         <section aria-labelledby="just-for-you-heading">

@@ -5,6 +5,7 @@ import type { ICartResponseItem } from "../../../services/api/api.cart";
 import { useAppDispatch } from "../../../redux/store";
 import cartAsync from "../../../redux/async-thunk/cart.thunk";
 import TrashIcon from "../../../icons/TrashIcon";
+import { logEvent } from "../../../utils/analytics";
 
 const ItemCard = ({ item }: { item: ICartResponseItem }) => {
   const dispatch = useAppDispatch();
@@ -15,6 +16,13 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
 
   const handleQuantityChange = (newQuantity: number) => {
     if (variant) {
+      logEvent("update_cart_quantity", {
+        productId: product._id,
+        title: product.title,
+        variantId: variant._id,
+        oldQuantity: quantity,
+        newQuantity,
+      });
       dispatch(
         cartAsync.updateCartItemThunk({
           productId: product._id,
@@ -29,6 +37,14 @@ const ItemCard = ({ item }: { item: ICartResponseItem }) => {
 
   const handleRemove = () => {
     if (variant) {
+      logEvent("remove_from_cart", {
+        productId: product._id,
+        title: product.title,
+        variantId: variant._id,
+        variantName: variant.variantName,
+        price: price,
+        quantity,
+      });
       dispatch(
         cartAsync.removeFromCartThunk({
           productId: product._id,

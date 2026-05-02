@@ -10,6 +10,7 @@ import SearchItemList from "../searchProducts/components/productItem";
 import categoriesAync from "../../redux/async-thunk/categories.thunk";
 import { AppRoutes } from "../../navigation";
 import { HORIZONTAL_PADDING_REM } from "../../constants";
+import { logEvent } from "../../utils/analytics";
 
 type PriceSort = "" | "price_asc" | "price_desc";
 
@@ -81,6 +82,12 @@ const CategoryPage = () => {
     setPriceSort("");
     setOpenFilterKey(null);
     setSpecValueMap({});
+
+    logEvent("view_category", {
+      categoryId,
+      categoryName: category?.name || null,
+      isParent,
+    });
   }, [categoryId]);
 
   // ===== Accumulate spec values from every products load =====
@@ -155,6 +162,12 @@ const CategoryPage = () => {
       } else {
         updated[key] = value;
       }
+      logEvent("filter_change", {
+        categoryId,
+        filterKey: key,
+        filterValue: updated[key] || null,
+        action: updated[key] ? "add" : "remove",
+      });
       return updated;
     });
   };

@@ -8,6 +8,7 @@ import ActionSection from "./components/ActionSection";
 import { useAuth } from "../../contexts/AuthContext";
 import { AppRoutes } from "../../navigation";
 import { UserRole } from "../../shared/models/user-model";
+import { logEvent } from "../../utils/analytics";
 
 interface LogInSignUpPageProps {
   action: "login" | "signup";
@@ -76,10 +77,12 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
     try {
       setError("");
       await login(email, password);
+      logEvent("login", { method: "email" });
     } catch (err: any) {
       const message =
         err?.response?.data?.message || err?.message || "Đăng nhập thất bại";
       setError(message);
+      logEvent("login_failed", { method: "email", error: message });
     }
   };
 
@@ -104,10 +107,12 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
         dateOfBirth,
       });
       await login(email, password);
+      logEvent("sign_up", { method: "email" });
     } catch (err: any) {
       const message =
         err?.response?.data?.message || err?.message || "Đăng ký thất bại";
       setError(message);
+      logEvent("sign_up_failed", { method: "email", error: message });
     }
   };
 

@@ -31,6 +31,7 @@ import {
   getMyMemberInfo,
   type IMemberInfo,
 } from "../../services/api/api.loyalty";
+import { logEvent } from "../../utils/analytics";
 
 interface CheckoutState {
   products: {
@@ -128,6 +129,10 @@ const CheckoutPage = () => {
   const handleCouponApply = (code: string, discountAmount: number) => {
     setCouponCode(code);
     setCouponDiscount(discountAmount);
+    logEvent("apply_coupon", {
+      couponCode: code,
+      discountAmount,
+    });
   };
 
   // Derive items for product-specific coupon validation
@@ -228,6 +233,21 @@ const CheckoutPage = () => {
       if (!newPayment) {
         throw new Error("create payment error");
       }
+      logEvent("purchase", {
+        orderId: newOrder._id,
+        paymentMethod: order.method,
+        totalPrice: order.sumPrice,
+        couponCode: couponCode || null,
+        couponDiscount,
+        pointsRedeemed: pointsToRedeem,
+        itemCount: order.listProduct.length,
+        items: order.listProduct.map((e) => ({
+          productId: e.product._id,
+          title: e.product.title,
+          variantId: e.variant._id,
+          quantity: e.quantity,
+        })),
+      });
       window.location.href = newPayment;
     } catch (err: any) {
       const msg: string =
@@ -247,6 +267,22 @@ const CheckoutPage = () => {
   // Run once on mount: populate the Redux order with the products passed from the cart page.
   useEffect(() => {
     dispatch(updateOrder({ field: "listProduct", value: products }));
+
+    logEvent("begin_checkout", {
+      itemCount: products.length,
+      items: products.map((p) => ({
+        productId: p.product._id,
+        title: p.product.title,
+        variantId: p.variant._id,
+        variantName: p.variant.variantName,
+        price: p.variant.price,
+        quantity: p.quantity,
+      })),
+      totalValue: products.reduce(
+        (sum, p) => sum + p.variant.price * p.quantity,
+        0,
+      ),
+    });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

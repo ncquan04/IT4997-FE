@@ -10,6 +10,7 @@ import SearchItemList from "./components/productItem";
 import NotFoundPage from "../notFound/NotFoundPage";
 import categoriesAync from "../../redux/async-thunk/categories.thunk";
 import LoadingScreen from "../../components/common/LoadingScreen";
+import { logEvent } from "../../utils/analytics";
 
 const SearchPage = () => {
   const dispatch = useAppDispatch();
@@ -52,6 +53,13 @@ const SearchPage = () => {
   const loadMore = useCallback(() => {
     if (isLoading) return;
     if (page! >= totalPages) return;
+
+    logEvent("load_more", {
+      query: q,
+      categoryId,
+      currentPage: page,
+      nextPage: page! + 1,
+    });
 
     dispatch(searchAsync.searchProducts(buildPayload(page! + 1)));
   }, [isLoading, page, totalPages, q]);

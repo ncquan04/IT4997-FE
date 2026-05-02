@@ -40,6 +40,7 @@ import AllProductsPage from "../pages/allProducts/AllProductsPage";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { UserRole } from "../shared/models/user-model";
+import { usePageView } from "../hooks/usePageView";
 
 export const AppRoutes = {
   DEFAULT: "/",
@@ -121,10 +122,16 @@ const AdminLayout = ({ children }: { children: any }) => {
   );
 };
 
+const PageViewTracker = () => {
+  usePageView();
+  return null;
+};
+
 const RootNavigation = () => {
   return (
     <>
       <BrowserRouter>
+        <PageViewTracker />
         <Routes>
           <Route path={AppRoutes.DEFAULT} element={<RootRedirect />} />
           <Route

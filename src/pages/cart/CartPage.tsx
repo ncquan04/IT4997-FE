@@ -7,6 +7,7 @@ import CommonButton from "../../components/common/CommonButton";
 import CartTotal from "./components/CartTotal";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import cartAsync from "../../redux/async-thunk/cart.thunk";
+import { logEvent } from "../../utils/analytics";
 
 const CartPage = () => {
   const i18n = useI18n();
@@ -20,6 +21,20 @@ const CartPage = () => {
   useEffect(() => {
     dispatch(cartAsync.fetchCart());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!isLoading && cartItems.length > 0) {
+      logEvent("view_cart", {
+        itemCount: cartItems.length,
+        totalPrice,
+        items: cartItems.slice(0, 10).map((ci) => ({
+          productId: ci.product._id,
+          title: ci.product.title,
+          quantity: ci.quantity,
+        })),
+      });
+    }
+  }, [isLoading, cartItems.length]);
 
   const handleReturnToShop = () => {
     navigate("/");

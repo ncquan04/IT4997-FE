@@ -12,6 +12,7 @@ import { addToCart } from "../../../services/api/api.cart";
 import { useAuth } from "../../../contexts/AuthContext";
 import { AppRoutes } from "../../../navigation";
 import { useToast } from "../../../contexts/ToastContext";
+import { logEvent } from "../../../utils/analytics";
 
 interface ItemCardProps {
   item: Product;
@@ -67,6 +68,15 @@ const ItemCard = ({ item }: ItemCardProps) => {
       await addToCart(item._id, selectedVariant._id, 1);
       showToast(i18n.t("Added to cart"), "success");
       setPickerOpen(false);
+      logEvent("add_to_cart", {
+        productId: item._id,
+        title: item.title,
+        variantId: selectedVariant._id,
+        variantName: selectedVariant.variantName,
+        price: selectedVariant.price,
+        quantity: 1,
+        source: "product_card",
+      });
     } catch (error: any) {
       console.error(error);
       showToast(
@@ -89,6 +99,12 @@ const ItemCard = ({ item }: ItemCardProps) => {
   };
 
   const handleClick = () => {
+    logEvent("select_item", {
+      productId: item._id,
+      title: item.title,
+      price: variant?.price,
+      source: "product_card",
+    });
     navigate(`/products/${item._id}`);
   };
 

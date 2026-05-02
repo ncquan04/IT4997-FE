@@ -25,6 +25,7 @@ import {
 import { AppRoutes } from "../../../navigation";
 import BranchAvailabilitySection from "./BranchAvailabilitySection";
 import { useBranchAvailability } from "../hooks/useBranchAvailability";
+import { logEvent } from "../../../utils/analytics";
 
 interface ProductDetailProps {
   product: IProduct;
@@ -89,6 +90,19 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
     setImageIdx(0);
   }, [product]);
 
+  // Track view_product
+  useEffect(() => {
+    const variant = product.variants[0];
+    logEvent("view_product", {
+      productId: product._id,
+      title: product.title,
+      categoryId: product.categoryId,
+      brand: product.brand,
+      price: variant?.price,
+      variantName: variant?.variantName,
+    });
+  }, [product._id]);
+
   useEffect(() => {
     if (isAuthenticated && product?._id) {
       dispatch(checkWishlistThunk(product._id));
@@ -120,6 +134,12 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
       setSelectedVariant(variant);
       setQuantity(1);
       setImageIdx(0);
+      logEvent("select_variant", {
+        productId: product._id,
+        variantId: variant._id,
+        variantName: variant.variantName,
+        price: variant.price,
+      });
     }
   };
 
@@ -139,6 +159,16 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
 
   const handleBuy = () => {
     if (!selectedVariant) return;
+
+    logEvent("begin_checkout", {
+      productId: product._id,
+      title: product.title,
+      variantId: selectedVariant._id,
+      variantName: selectedVariant.variantName,
+      price: selectedVariant.price,
+      quantity,
+      source: "product_detail",
+    });
 
     navigate("/checkout", {
       state: {
@@ -162,6 +192,12 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
       await dispatch(addToWishlistThunk(product._id)).unwrap();
       setAdded(true);
       showToast("Added to wishlist", "success");
+      logEvent("add_to_wishlist", {
+        productId: product._id,
+        title: product.title,
+        categoryId: product.categoryId,
+        price: selectedVariant?.price,
+      });
     } catch (error) {
       showToast("Failed to add to wishlist", "error");
     }
@@ -173,6 +209,10 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
       await dispatch(removeFromWishlistThunk(product._id)).unwrap();
       setAdded(false);
       showToast("Removed from wishlist", "success");
+      logEvent("remove_from_wishlist", {
+        productId: product._id,
+        title: product.title,
+      });
     } catch (error) {
       showToast("Failed to remove from wishlist", "error");
     }
