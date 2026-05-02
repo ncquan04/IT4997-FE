@@ -1,12 +1,8 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import type { User } from "../shared/models/user-model";
 
 import AppStorage from "../storage";
+import { setAnalyticsUserId } from "../utils/analytics";
 
 import { authApi, type RegisterPayload } from "../services/api/api.auth";
 
@@ -43,6 +39,7 @@ const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         AppStorage.set("user", user);
         setIsAuthenticated(true);
         setUser(user);
+        setAnalyticsUserId(user._id);
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -59,6 +56,7 @@ const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       AppStorage.remove("user");
       setIsAuthenticated(false);
       setUser(null);
+      setAnalyticsUserId(null);
     }
   };
 

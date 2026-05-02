@@ -6,11 +6,14 @@ import "swiper/css/pagination";
 import App from "./App.tsx";
 import { store } from "./redux/store.ts";
 import { Provider } from "react-redux";
+import { initAnalytics } from "./utils/analytics";
+
+initAnalytics();
 
 createRoot(document.getElementById("root")!).render(
-    <StrictMode>
-        <Provider store={store}>
-            <App />
-        </Provider>
-    </StrictMode>,
+  <StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </StrictMode>,
 );

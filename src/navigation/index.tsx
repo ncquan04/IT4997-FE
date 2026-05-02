@@ -34,6 +34,7 @@ import EmployeeManagementPage from "../pages/admin/EmployeeManagementPage";
 import AttendanceManagementPage from "../pages/admin/AttendanceManagementPage";
 import PayrollManagementPage from "../pages/admin/PayrollManagementPage";
 import BranchManagementPage from "../pages/admin/BranchManagementPage";
+import FunnelManagementPage from "../pages/admin/FunnelManagementPage";
 import CategoryPage from "../pages/category/CategoryPage";
 import AllProductsPage from "../pages/allProducts/AllProductsPage";
 import { Navigate } from "react-router-dom";
@@ -74,6 +75,7 @@ export const AppRoutes = {
   ADMIN_ATTENDANCE: "/admin/attendance",
   ADMIN_PAYROLL: "/admin/payroll",
   ADMIN_BRANCHES: "/admin/branches",
+  ADMIN_FUNNEL: "/admin/funnel",
   CATEGORY: "/categories/:categoryId",
   ALL_PRODUCTS: "/products",
 };
@@ -374,6 +376,14 @@ const RootNavigation = () => {
             element={
               <AdminLayout>
                 <BranchManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_FUNNEL}
+            element={
+              <AdminLayout>
+                <FunnelManagementPage />
               </AdminLayout>
             }
           />

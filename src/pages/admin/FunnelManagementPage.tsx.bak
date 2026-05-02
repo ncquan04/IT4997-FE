@@ -1,0 +1,956 @@
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import {
+  ReactFlow,
+  type Node,
+  type Edge,
+  type NodeProps,
+  Handle,
+  Position,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import {
+  eventApi,
+  FILTER_OP_LABELS,
+  type FunnelStep,
+  type FunnelStepDef,
+  type StepFilter,
+  type FilterOp,
+} from "../../services/api/api.event";
+
+const ALL_OPS = Object.keys(FILTER_OP_LABELS) as FilterOp[];
+
+// ─── React Flow: Custom Nodes ────────────────────────────────────────────────
+
+const STEP_COLORS = [
+  "#3b82f6", // blue
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#8b5cf6", // violet
+  "#ec4899", // pink
+  "#06b6d4", // cyan
+  "#f97316", // orange
+  "#6366f1", // indigo
+  "#14b8a6", // teal
+  "#e11d48", // rose
+];
+
+/* ── Step node ── */
+type StepNodeData = {
+  label: string;
+  count: number;
+  index: number;
+  color: string;
+  isFirst: boolean;
+  isLast: boolean;
+};
+
+const STEP_W = 320;
+const STEP_H = 80;
+
+const StepNode = memo(({ data }: NodeProps<Node<StepNodeData>>) => {
+  const { label, count, index, color, isFirst, isLast } = data;
+  return (
+    <div
+      className="rounded-xl shadow-lg border-2 flex flex-col items-center justify-center"
+      style={{
+        width: STEP_W,
+        height: STEP_H,
+        borderColor: color,
+        background: `linear-gradient(135deg, ${color}18, ${color}08)`,
+      }}
+    >
+      {!isFirst && (
+        <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      )}
+      {!isLast && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          style={{ opacity: 0 }}
+        />
+      )}
+      <span className="text-lg font-bold" style={{ color }}>
+        Step {index}: {count.toLocaleString()}
+      </span>
+      <span className="text-sm text-gray-500 mt-0.5">{label}</span>
+    </div>
+  );
+});
+StepNode.displayName = "StepNode";
+
+/* ── Badge node (rate + drop between steps) ── */
+type BadgeNodeData = { rate: string; dropoff: string };
+
+const BadgeNode = memo(({ data }: NodeProps<Node<BadgeNodeData>>) => {
+  const { rate, dropoff } = data;
+  return (
+    <div className="flex items-center gap-2" style={{ pointerEvents: "none" }}>
+      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+      <span className="px-3 py-1 rounded-full text-white text-sm font-bold bg-green-500 shadow">
+        {rate}%
+      </span>
+      <span className="px-3 py-1 rounded-full text-white text-sm font-bold bg-red-500 shadow">
+        {dropoff}%
+      </span>
+    </div>
+  );
+});
+BadgeNode.displayName = "BadgeNode";
+
+const funnelNodeTypes = { step: StepNode, badge: BadgeNode };
+
+// ─── React Flow: Funnel Chart ────────────────────────────────────────────────
+
+const BADGE_H = 32;
+const GAP_STEP_BADGE = 20;
+const GAP_BADGE_STEP = 20;
+const ROW_HEIGHT = STEP_H + GAP_STEP_BADGE + BADGE_H + GAP_BADGE_STEP;
+
+const FunnelFlowChart = ({ funnelData }: { funnelData: FunnelStep[] }) => {
+  const { nodes, edges } = useMemo(() => {
+    const nodes: Node[] = [];
+    const edges: Edge[] = [];
+
+    funnelData.forEach((s, i) => {
+      const color = STEP_COLORS[i % STEP_COLORS.length];
+      const y = i * ROW_HEIGHT;
+
+      // Step node
+      nodes.push({
+        id: `s-${i}`,
+        type: "step",
+        position: { x: 0, y },
+        draggable: false,
+        selectable: false,
+        data: {
+          label: s.step,
+          count: s.count,
+          index: i,
+          color,
+          isFirst: i === 0,
+          isLast: i === funnelData.length - 1,
+        },
+      });
+
+      // Badge + edges between steps
+      if (i < funnelData.length - 1) {
+        const next = funnelData[i + 1];
+        const badgeId = `b-${i}`;
+        const badgeY = y + STEP_H + GAP_STEP_BADGE;
+
+        nodes.push({
+          id: badgeId,
+          type: "badge",
+          position: { x: STEP_W / 2 - 80, y: badgeY },
+          draggable: false,
+          selectable: false,
+          data: { rate: next.rate, dropoff: next.dropoff },
+        });
+
+        edges.push(
+          {
+            id: `e-s${i}-b${i}`,
+            source: `s-${i}`,
+            target: badgeId,
+            type: "smoothstep",
+            animated: true,
+            style: { stroke: color, strokeWidth: 2 },
+          },
+          {
+            id: `e-b${i}-s${i + 1}`,
+            source: badgeId,
+            target: `s-${i + 1}`,
+            type: "smoothstep",
+            animated: true,
+            style: {
+              stroke: STEP_COLORS[(i + 1) % STEP_COLORS.length],
+              strokeWidth: 2,
+            },
+          },
+        );
+      }
+    });
+
+    return { nodes, edges };
+  }, [funnelData]);
+
+  const flowHeight = Math.max(300, funnelData.length * ROW_HEIGHT + 40);
+
+  return (
+    <div style={{ height: flowHeight, width: "100%" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={funnelNodeTypes}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        panOnDrag={false}
+        zoomOnScroll={false}
+        zoomOnPinch={false}
+        zoomOnDoubleClick={false}
+        preventScrolling={false}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        proOptions={{ hideAttribution: true }}
+      />
+    </div>
+  );
+};
+
+// Ops that need an array value
+const MULTI_VALUE_OPS = new Set<FilterOp>(["in", "not_in"]);
+// Ops that need no value at all
+const NO_VALUE_OPS = new Set<FilterOp>(["exists", "not_exists"]);
+
+const PRESET_FUNNELS: Record<string, FunnelStepDef[]> = {
+  "Purchase Funnel": [
+    { eventName: "page_view", filters: [] },
+    { eventName: "view_product", filters: [] },
+    { eventName: "add_to_cart", filters: [] },
+    { eventName: "begin_checkout", filters: [] },
+    { eventName: "purchase", filters: [] },
+  ],
+  "Search to Buy": [
+    { eventName: "page_view", filters: [] },
+    { eventName: "search", filters: [] },
+    { eventName: "view_product", filters: [] },
+    { eventName: "add_to_cart", filters: [] },
+    { eventName: "purchase", filters: [] },
+  ],
+};
+
+// ─── Tag Input Component ─────────────────────────────────────────────────────
+
+const TagInput = ({
+  values,
+  suggestions,
+  onChange,
+  placeholder,
+}: {
+  values: string[];
+  suggestions: any[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) => {
+  const [input, setInput] = useState("");
+
+  const addTag = (val: string) => {
+    const v = val.trim();
+    if (v && !values.includes(v)) {
+      onChange([...values, v]);
+    }
+    setInput("");
+  };
+
+  const removeTag = (idx: number) => {
+    onChange(values.filter((_, i) => i !== idx));
+  };
+
+  const listId = `tag-suggest-${Math.random().toString(36).slice(2, 8)}`;
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 border border-gray-200 rounded px-2 py-1 min-w-45 bg-white">
+      {values.map((v, i) => (
+        <span
+          key={`${v}-${i}`}
+          className="inline-flex items-center gap-1 bg-blue-500 text-white text-xs font-medium rounded px-2 py-0.5"
+        >
+          {String(v)}
+          <button
+            onClick={() => removeTag(i)}
+            className="hover:text-blue-200 text-[10px] leading-none"
+          >
+            ×
+          </button>
+        </span>
+      ))}
+      <input
+        type="text"
+        list={listId}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addTag(input);
+          }
+        }}
+        onBlur={() => {
+          if (input.trim()) addTag(input);
+        }}
+        placeholder={values.length === 0 ? placeholder || "Type + Enter" : ""}
+        className="flex-1 min-w-20 text-xs outline-none bg-transparent py-0.5"
+      />
+      <datalist id={listId}>
+        {suggestions
+          .filter((s) => !values.includes(String(s)))
+          .map((s) => (
+            <option key={String(s)} value={String(s)} />
+          ))}
+      </datalist>
+    </div>
+  );
+};
+
+// ─── Single Filter Row Component ─────────────────────────────────────────────
+
+const FilterRow = ({
+  filter,
+  paramKeys,
+  onUpdate,
+  onRemove,
+  onLoadValues,
+  valueSuggestions,
+}: {
+  filter: StepFilter;
+  paramKeys: string[];
+  onUpdate: (f: StepFilter) => void;
+  onRemove: () => void;
+  onLoadValues: (field: string) => void;
+  valueSuggestions: any[];
+}) => {
+  const needsNoValue = NO_VALUE_OPS.has(filter.op);
+  const needsMulti = MULTI_VALUE_OPS.has(filter.op);
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 py-1.5">
+      {/* Field selector */}
+      <div className="relative">
+        <input
+          type="text"
+          list="param-keys-list"
+          value={filter.field}
+          onChange={(e) => {
+            onUpdate({ ...filter, field: e.target.value });
+            if (e.target.value) onLoadValues(e.target.value);
+          }}
+          placeholder="field"
+          className="border border-gray-200 rounded px-2 py-1 text-xs w-35 font-medium"
+        />
+        <datalist id="param-keys-list">
+          {paramKeys.map((k) => (
+            <option key={k} value={k} />
+          ))}
+        </datalist>
+      </div>
+
+      {/* Operator selector */}
+      <select
+        value={filter.op}
+        onChange={(e) => {
+          const newOp = e.target.value as FilterOp;
+          const newFilter = { ...filter, op: newOp };
+          // Reset value when switching between single/multi/no-value ops
+          if (NO_VALUE_OPS.has(newOp)) {
+            newFilter.value = undefined;
+          } else if (
+            MULTI_VALUE_OPS.has(newOp) &&
+            !Array.isArray(filter.value)
+          ) {
+            newFilter.value = filter.value ? [String(filter.value)] : [];
+          } else if (
+            !MULTI_VALUE_OPS.has(newOp) &&
+            Array.isArray(filter.value)
+          ) {
+            newFilter.value = filter.value[0] || "";
+          }
+          onUpdate(newFilter);
+        }}
+        className="border border-gray-200 rounded px-2 py-1 text-xs font-medium text-gray-700"
+      >
+        {ALL_OPS.map((op) => (
+          <option key={op} value={op}>
+            {FILTER_OP_LABELS[op]}
+          </option>
+        ))}
+      </select>
+
+      {/* Value input */}
+      {!needsNoValue && (
+        <>
+          {needsMulti ? (
+            <TagInput
+              values={
+                Array.isArray(filter.value) ? filter.value.map(String) : []
+              }
+              suggestions={valueSuggestions}
+              onChange={(vals) => onUpdate({ ...filter, value: vals })}
+              placeholder="add values..."
+            />
+          ) : (
+            <input
+              type="text"
+              value={filter.value ?? ""}
+              onChange={(e) => onUpdate({ ...filter, value: e.target.value })}
+              onFocus={() => {
+                if (filter.field) onLoadValues(filter.field);
+              }}
+              list="param-values-list"
+              placeholder="value"
+              className="border border-gray-200 rounded px-2 py-1 text-xs w-35"
+            />
+          )}
+        </>
+      )}
+
+      {/* Remove button */}
+      <button
+        onClick={onRemove}
+        className="text-red-400 hover:text-red-600 p-1"
+        title="Remove filter"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
+// ─── Step Card Component ─────────────────────────────────────────────────────
+
+const StepCard = ({
+  index,
+  step,
+  eventNames,
+  onUpdate,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+}: {
+  index: number;
+  step: FunnelStepDef;
+  eventNames: string[];
+  onUpdate: (s: FunnelStepDef) => void;
+  onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  isFirst: boolean;
+  isLast: boolean;
+}) => {
+  const [paramKeys, setParamKeys] = useState<string[]>([]);
+  const [valueSuggestions, setValueSuggestions] = useState<
+    Record<string, any[]>
+  >({});
+  const [expanded, setExpanded] = useState(true);
+
+  // Load param keys when event name changes
+  useEffect(() => {
+    if (step.eventName) {
+      eventApi
+        .getParamKeys(step.eventName)
+        .then((r) => setParamKeys(r.paramKeys))
+        .catch(() => {});
+    }
+  }, [step.eventName]);
+
+  const loadValues = useCallback(
+    (field: string) => {
+      if (valueSuggestions[field] || !step.eventName) return;
+      eventApi
+        .getParamValues(step.eventName, field)
+        .then((r) => {
+          setValueSuggestions((prev) => ({ ...prev, [field]: r.values }));
+        })
+        .catch(() => {});
+    },
+    [step.eventName, valueSuggestions],
+  );
+
+  const addFilter = () => {
+    onUpdate({
+      ...step,
+      filters: [...step.filters, { field: "", op: "in", value: [] }],
+    });
+  };
+
+  const updateFilter = (idx: number, f: StepFilter) => {
+    const filters = [...step.filters];
+    filters[idx] = f;
+    onUpdate({ ...step, filters });
+  };
+
+  const removeFilter = (idx: number) => {
+    onUpdate({
+      ...step,
+      filters: step.filters.filter((_, i) => i !== idx),
+    });
+  };
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      {/* Step header */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
+        <span className="text-xs font-bold text-white bg-indigo-500 rounded-full w-6 h-6 flex items-center justify-center shrink-0">
+          {index}
+        </span>
+
+        {/* Event name */}
+        <div className="flex-1">
+          <input
+            type="text"
+            list={`event-names-step-${index}`}
+            value={step.eventName}
+            onChange={(e) =>
+              onUpdate({
+                ...step,
+                eventName: e.target.value,
+                filters: step.filters,
+              })
+            }
+            placeholder="Select event name..."
+            className="border border-gray-200 rounded px-3 py-1.5 text-sm font-medium w-full max-w-xs"
+          />
+          <datalist id={`event-names-step-${index}`}>
+            {eventNames.map((n) => (
+              <option key={n} value={n} />
+            ))}
+          </datalist>
+        </div>
+
+        {/* Badges */}
+        {step.filters.length > 0 && (
+          <span className="text-[10px] font-semibold bg-orange-100 text-orange-600 rounded-full px-2 py-0.5">
+            {step.filters.length} filter{step.filters.length > 1 ? "s" : ""}
+          </span>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-gray-400 hover:text-gray-600 p-1 text-xs"
+            title={expanded ? "Collapse" : "Expand"}
+          >
+            {expanded ? "▼" : "▶"}
+          </button>
+          <button
+            onClick={onMoveUp}
+            disabled={isFirst}
+            className="text-gray-400 hover:text-gray-600 disabled:opacity-30 p-1 text-xs"
+            title="Move up"
+          >
+            ▲
+          </button>
+          <button
+            onClick={onMoveDown}
+            disabled={isLast}
+            className="text-gray-400 hover:text-gray-600 disabled:opacity-30 p-1 text-xs"
+            title="Move down"
+          >
+            ▼
+          </button>
+          <button
+            onClick={onRemove}
+            className="text-red-400 hover:text-red-600 p-1"
+            title="Remove step"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Filters area */}
+      {expanded && (
+        <div className="px-4 py-3">
+          {step.filters.length > 0 && (
+            <div className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-2">
+              Filters:
+            </div>
+          )}
+
+          {step.filters.map((f, fi) => (
+            <FilterRow
+              key={fi}
+              filter={f}
+              paramKeys={paramKeys}
+              onUpdate={(newF) => updateFilter(fi, newF)}
+              onRemove={() => removeFilter(fi)}
+              onLoadValues={loadValues}
+              valueSuggestions={valueSuggestions[f.field] || []}
+            />
+          ))}
+
+          <button
+            onClick={addFilter}
+            className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
+          >
+            <span className="text-sm leading-none">+</span> Add filter
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
+
+const FunnelManagementPage = () => {
+  const [eventNames, setEventNames] = useState<string[]>([]);
+  const [steps, setSteps] = useState<FunnelStepDef[]>(
+    PRESET_FUNNELS["Purchase Funnel"].map((s) => ({
+      ...s,
+      filters: [...s.filters],
+    })),
+  );
+  const [fromDate, setFromDate] = useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split("T")[0];
+  });
+  const [toDate, setToDate] = useState<string>(
+    () => new Date().toISOString().split("T")[0],
+  );
+  const [funnelData, setFunnelData] = useState<FunnelStep[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  // Load event names
+  useEffect(() => {
+    eventApi
+      .getEventNames()
+      .then((r) => setEventNames(r.eventNames))
+      .catch(() => {});
+  }, []);
+
+  // Query funnel
+  const runQuery = useCallback(async () => {
+    const validSteps = steps.filter((s) => s.eventName.trim());
+    if (validSteps.length < 2) return;
+    setLoading(true);
+    try {
+      const result = await eventApi.queryFunnel({
+        steps: validSteps,
+        from: fromDate ? new Date(fromDate).getTime() : undefined,
+        to: toDate ? new Date(toDate + "T23:59:59").getTime() : undefined,
+      });
+      setFunnelData(result.funnel);
+      setTotalUsers(result.totalUsers);
+    } catch (err) {
+      console.error("Funnel query failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [steps, fromDate, toDate]);
+
+  // Step management
+  const addStep = () => {
+    setSteps((prev) => [...prev, { eventName: "", filters: [] }]);
+  };
+
+  const updateStep = (idx: number, s: FunnelStepDef) => {
+    setSteps((prev) => prev.map((p, i) => (i === idx ? s : p)));
+  };
+
+  const removeStep = (idx: number) => {
+    setSteps((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const moveStep = (idx: number, dir: -1 | 1) => {
+    const next = idx + dir;
+    if (next < 0 || next >= steps.length) return;
+    setSteps((prev) => {
+      const arr = [...prev];
+      [arr[idx], arr[next]] = [arr[next], arr[idx]];
+      return arr;
+    });
+  };
+
+  const applyPreset = (name: string) => {
+    const preset = PRESET_FUNNELS[name];
+    if (preset)
+      setSteps(preset.map((s) => ({ ...s, filters: [...s.filters] })));
+  };
+
+  const validStepCount = steps.filter((s) => s.eventName.trim()).length;
+
+  return (
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 md:p-10">
+      {/* Header */}
+      <div className="mb-5 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+          Funnel Analysis
+        </h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Analyze user conversion through custom step sequences with per-step
+          filters
+        </p>
+      </div>
+
+      {/* Top controls bar */}
+      <div className="bg-white border border-gray-100 rounded-xl px-4 sm:px-5 py-4 mb-5 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3">
+        {/* Date range */}
+        <span className="text-sm font-medium text-gray-600 shrink-0">
+          Time range:
+        </span>
+        <div className="flex items-center gap-1">
+          <input
+            type="date"
+            value={fromDate}
+            className="border border-gray-200 rounded px-2 py-1 text-sm"
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </div>
+        <span className="text-gray-400 text-xs">→</span>
+        <div className="flex items-center gap-1">
+          <input
+            type="date"
+            value={toDate}
+            className="border border-gray-200 rounded px-2 py-1 text-sm"
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </div>
+
+        <div className="hidden sm:block w-px h-6 bg-gray-200 mx-1" />
+
+        {/* Presets */}
+        {Object.keys(PRESET_FUNNELS).map((name) => (
+          <button
+            key={name}
+            onClick={() => applyPreset(name)}
+            className="px-3 py-1 text-xs font-medium rounded-full border border-blue-200 text-blue-600 hover:bg-blue-50 transition"
+          >
+            {name}
+          </button>
+        ))}
+
+        <div className="sm:ml-auto" />
+
+        {/* Run button */}
+        <button
+          onClick={runQuery}
+          disabled={validStepCount < 2 || loading}
+          className="px-5 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-40 transition flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  opacity="0.25"
+                />
+                <path
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Running...
+            </>
+          ) : (
+            <>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+              Run
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Steps builder */}
+      <div className="space-y-3 mb-6">
+        {steps.map((step, i) => (
+          <div key={i}>
+            {i > 0 && (
+              <div className="flex justify-center py-1">
+                <svg
+                  width="16"
+                  height="20"
+                  viewBox="0 0 16 20"
+                  className="text-gray-300"
+                >
+                  <path
+                    d="M8 0v16M4 12l4 4 4-4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                </svg>
+              </div>
+            )}
+            <StepCard
+              index={i}
+              step={step}
+              eventNames={eventNames}
+              onUpdate={(s) => updateStep(i, s)}
+              onRemove={() => removeStep(i)}
+              onMoveUp={() => moveStep(i, -1)}
+              onMoveDown={() => moveStep(i, 1)}
+              isFirst={i === 0}
+              isLast={i === steps.length - 1}
+            />
+          </div>
+        ))}
+
+        {/* Add step button */}
+        <button
+          onClick={addStep}
+          className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm font-medium text-gray-400 hover:text-gray-600 hover:border-gray-300 transition flex items-center justify-center gap-2"
+        >
+          <span className="text-lg leading-none">+</span> Add query step
+        </button>
+      </div>
+
+      {/* ─── Results ──────────────────────────────────────────────────────── */}
+      {funnelData.length > 0 && (
+        <div className="space-y-5">
+          {/* Summary */}
+          <div className="bg-white border border-gray-100 rounded-xl px-5 py-4">
+            <p className="text-sm text-gray-500">
+              Total unique users entering funnel:{" "}
+              <span className="font-bold text-gray-800 text-lg">
+                {totalUsers.toLocaleString()}
+              </span>
+            </p>
+          </div>
+
+          {/* Funnel chart */}
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-700 mb-4">
+              Conversion Funnel
+            </h3>
+            <FunnelFlowChart funnelData={funnelData} />
+          </div>
+
+          {/* Step details table */}
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
+            <h3 className="text-base font-semibold text-gray-700 mb-4">
+              Step Details
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-2 px-3 text-gray-500 font-medium">
+                      #
+                    </th>
+                    <th className="text-left py-2 px-3 text-gray-500 font-medium">
+                      Step
+                    </th>
+                    <th className="text-left py-2 px-3 text-gray-500 font-medium">
+                      Filters
+                    </th>
+                    <th className="text-right py-2 px-3 text-gray-500 font-medium">
+                      Users
+                    </th>
+                    <th className="text-right py-2 px-3 text-gray-500 font-medium">
+                      Overall Rate
+                    </th>
+                    <th className="text-right py-2 px-3 text-gray-500 font-medium">
+                      Drop-off
+                    </th>
+                    <th className="text-left py-2 px-3 text-gray-500 font-medium">
+                      Bar
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {funnelData.map((s, i) => {
+                    const maxCount = funnelData[0]?.count || 1;
+                    const barWidth =
+                      maxCount > 0 ? (s.count / maxCount) * 100 : 0;
+                    return (
+                      <tr
+                        key={`${s.step}-${i}`}
+                        className="border-b border-gray-50 hover:bg-gray-50/50"
+                      >
+                        <td className="py-2 px-3 text-gray-400">{i}</td>
+                        <td className="py-2 px-3 font-medium text-gray-700">
+                          {s.step}
+                        </td>
+                        <td className="py-2 px-3 text-xs text-gray-500 max-w-50">
+                          {s.filters && s.filters.length > 0
+                            ? s.filters.map((f, fi) => (
+                                <span
+                                  key={fi}
+                                  className="inline-block bg-gray-100 rounded px-1.5 py-0.5 mr-1 mb-0.5"
+                                >
+                                  {f.field}{" "}
+                                  <span className="text-gray-400">
+                                    {FILTER_OP_LABELS[f.op]}
+                                  </span>{" "}
+                                  {!NO_VALUE_OPS.has(f.op) && (
+                                    <span className="font-medium">
+                                      {Array.isArray(f.value)
+                                        ? f.value.join(", ")
+                                        : String(f.value ?? "")}
+                                    </span>
+                                  )}
+                                </span>
+                              ))
+                            : "—"}
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono">
+                          {s.count.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-right font-semibold text-indigo-600">
+                          {s.rate}%
+                        </td>
+                        <td className="py-2 px-3 text-right text-red-500">
+                          {i === 0 ? "—" : `${s.dropoff}%`}
+                        </td>
+                        <td className="py-2 px-3 w-48">
+                          <div className="h-4 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{
+                                width: `${barWidth}%`,
+                                backgroundColor:
+                                  STEP_COLORS[i % STEP_COLORS.length],
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && funnelData.length === 0 && (
+        <div className="bg-white border border-gray-100 rounded-xl p-10 text-center">
+          <p className="text-gray-400 text-sm">
+            Configure funnel steps above and click "Run" to see results.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FunnelManagementPage;
