@@ -115,7 +115,6 @@ const STEP_W = 220;
 const STEP_H = 72;
 
 const ACCENT = "#db4444";
-const ACCENT_LIGHT = "#db444418";
 
 const StepNode = memo(({ data }: NodeProps<Node<StepNodeData>>) => {
   const { label, count, rate, dropoff, hasParent, hasChildren, isRoot } = data;
@@ -876,7 +875,7 @@ const FunnelManagementPage = () => {
     () => new Date().toISOString().split("T")[0],
   );
   const [results, setResults] = useState<FunnelTreeNodeResult[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const [, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(false);
   const [queryKey, setQueryKey] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -985,19 +984,6 @@ const FunnelManagementPage = () => {
       setLoading(false);
     }
   }, [nodes, fromDate, toDate, validNodeCount]);
-
-  /* ─── Stats helpers ─────────────────────────────────────────────────────── */
-
-  const leafNodes = useMemo(() => {
-    const parentIds = new Set(results.map((r) => r.id));
-    return results.filter((r) => !results.some((c) => c.parentId === r.id));
-  }, [results]);
-
-  const branchCount = useMemo(() => {
-    return results.filter(
-      (r) => results.filter((c) => c.parentId === r.id).length > 1,
-    ).length;
-  }, [results]);
 
   /* ─── Render ────────────────────────────────────────────────────────────── */
 
