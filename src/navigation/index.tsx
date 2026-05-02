@@ -35,6 +35,7 @@ import AttendanceManagementPage from "../pages/admin/AttendanceManagementPage";
 import PayrollManagementPage from "../pages/admin/PayrollManagementPage";
 import BranchManagementPage from "../pages/admin/BranchManagementPage";
 import FunnelManagementPage from "../pages/admin/FunnelManagementPage";
+import FunnelListPage from "../pages/admin/FunnelListPage";
 import CategoryPage from "../pages/category/CategoryPage";
 import AllProductsPage from "../pages/allProducts/AllProductsPage";
 import { Navigate } from "react-router-dom";
@@ -388,6 +389,14 @@ const RootNavigation = () => {
           />
           <Route
             path={AppRoutes.ADMIN_FUNNEL}
+            element={
+              <AdminLayout>
+                <FunnelListPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={`${AppRoutes.ADMIN_FUNNEL}/:funnelId`}
             element={
               <AdminLayout>
                 <FunnelManagementPage />

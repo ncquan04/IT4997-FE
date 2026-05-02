@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ReactFlow,
   type Node,
@@ -20,6 +21,13 @@ import {
   type StepFilter,
   type FilterOp,
 } from "../../services/api/api.event";
+import {
+  SAMPLE_FUNNELS,
+  getSavedFunnels,
+  saveFunnel,
+  type SavedFunnel,
+} from "./FunnelListPage";
+import { AppRoutes } from "../../navigation";
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
 /*  Constants                                                                 */
@@ -54,45 +62,6 @@ const buildPreset = (
     nodes.push(mkNode(parentId, d.eventName));
   }
   return nodes;
-};
-
-const PRESETS: Record<string, () => TreeNode[]> = {
-  "Purchase Funnel": () =>
-    buildPreset([
-      { parentIdx: null, eventName: "page_view" },
-      { parentIdx: 0, eventName: "view_product" },
-      { parentIdx: 1, eventName: "add_to_cart" },
-      { parentIdx: 2, eventName: "begin_checkout" },
-      { parentIdx: 3, eventName: "purchase" },
-    ]),
-  "Search \u2192 Buy": () =>
-    buildPreset([
-      { parentIdx: null, eventName: "page_view" },
-      { parentIdx: 0, eventName: "search" },
-      { parentIdx: 1, eventName: "view_product" },
-      { parentIdx: 2, eventName: "add_to_cart" },
-      { parentIdx: 3, eventName: "purchase" },
-    ]),
-  "Cart vs Wishlist": () =>
-    buildPreset([
-      { parentIdx: null, eventName: "page_view" },
-      { parentIdx: 0, eventName: "view_product" },
-      { parentIdx: 1, eventName: "add_to_cart" },
-      { parentIdx: 1, eventName: "wishlist" },
-      { parentIdx: 2, eventName: "begin_checkout" },
-      { parentIdx: 4, eventName: "purchase" },
-    ]),
-  "Multi-path Conversion": () =>
-    buildPreset([
-      { parentIdx: null, eventName: "page_view" },
-      { parentIdx: 0, eventName: "view_product" },
-      { parentIdx: 0, eventName: "search" },
-      { parentIdx: 1, eventName: "add_to_cart" },
-      { parentIdx: 2, eventName: "view_product" },
-      { parentIdx: 3, eventName: "purchase" },
-      { parentIdx: 4, eventName: "add_to_cart" },
-      { parentIdx: 6, eventName: "purchase" },
-    ]),
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════ */
@@ -877,9 +846,27 @@ const TreeBuilder = ({
 /*  Main Page                                                                 */
 /* ═══════════════════════════════════════════════════════════════════════════ */
 
+const loadFunnelById = (
+  id: string | undefined,
+): { funnel: SavedFunnel | null; nodes: TreeNode[] } => {
+  if (!id || id === "new") return { funnel: null, nodes: [mkNode(null, "")] };
+  // Check sample funnels
+  const sample = SAMPLE_FUNNELS.find((f) => f.id === id);
+  if (sample) return { funnel: sample, nodes: buildPreset(sample.steps) };
+  // Check saved funnels
+  const saved = getSavedFunnels().find((f) => f.id === id);
+  if (saved) return { funnel: saved, nodes: buildPreset(saved.steps) };
+  return { funnel: null, nodes: [mkNode(null, "")] };
+};
+
 const FunnelManagementPage = () => {
+  const { funnelId } = useParams<{ funnelId: string }>();
+  const navigate = useNavigate();
+  const initial = useMemo(() => loadFunnelById(funnelId), [funnelId]);
+
+  const [funnelName, setFunnelName] = useState(initial.funnel?.name || "");
   const [eventNames, setEventNames] = useState<string[]>([]);
-  const [nodes, setNodes] = useState<TreeNode[]>(PRESETS["Purchase Funnel"]());
+  const [nodes, setNodes] = useState<TreeNode[]>(initial.nodes);
   const [fromDate, setFromDate] = useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
@@ -892,6 +879,7 @@ const FunnelManagementPage = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(false);
   const [queryKey, setQueryKey] = useState(0);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     eventApi
@@ -934,13 +922,38 @@ const FunnelManagementPage = () => {
     });
   }, []);
 
-  const applyPreset = useCallback((name: string) => {
-    const fn = PRESETS[name];
-    if (fn) {
-      setNodes(fn());
-      setResults([]);
-    }
-  }, []);
+  const handleSave = useCallback(() => {
+    if (!funnelName.trim()) return;
+    const id =
+      funnelId && funnelId !== "new" ? funnelId : `custom-${Date.now()}`;
+    // Convert current nodes to step defs
+    const orderedNodes = [...nodes];
+    const steps = orderedNodes.map((n) => {
+      const parentIdx =
+        n.parentId === null
+          ? null
+          : orderedNodes.findIndex((p) => p._id === n.parentId);
+      return { parentIdx, eventName: n.eventName };
+    });
+    const funnel: SavedFunnel = {
+      id,
+      name: funnelName.trim(),
+      description: `Custom funnel: ${steps
+        .map((s) => s.eventName)
+        .filter(Boolean)
+        .join(" → ")}`,
+      steps,
+      icon: "📊",
+      color: "bg-gray-600",
+      category: "custom",
+      createdAt: new Date().toISOString().split("T")[0],
+    };
+    saveFunnel(funnel);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }, [funnelName, funnelId, nodes]);
+
+  const handleBack = () => navigate(AppRoutes.ADMIN_FUNNEL);
 
   /* ─── Query ─────────────────────────────────────────────────────────────── */
 
@@ -993,64 +1006,140 @@ const FunnelManagementPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-              Funnel Analysis
-            </h1>
-            <p className="text-gray-500 mt-1">
-              Build branching funnel trees to compare multiple conversion paths
-              side-by-side.
-            </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleBack}
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
+              title="Back to list"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div>
+              <input
+                type="text"
+                value={funnelName}
+                onChange={(e) => setFunnelName(e.target.value)}
+                placeholder="Funnel name..."
+                className="text-2xl font-bold text-gray-900 tracking-tight bg-transparent border-none outline-none placeholder:text-gray-300 w-full"
+              />
+              <p className="text-gray-500 mt-0.5 text-sm">
+                Build branching funnel trees to compare multiple conversion
+                paths side-by-side.
+              </p>
+            </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={runQuery}
-            disabled={validNodeCount < 2 || loading}
-            className="flex items-center justify-center gap-2 bg-button2 hover:bg-hoverButton text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-200 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
+          <div className="flex items-center gap-3">
+            {/* Save button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleSave}
+              disabled={!funnelName.trim()}
+              className="flex items-center gap-2 border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-3 rounded-xl font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {saved ? (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
                     stroke="currentColor"
-                    strokeWidth="4"
-                    opacity="0.25"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                Running...
-              </>
-            ) : (
-              <>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Run Query
-              </>
-            )}
-          </motion.button>
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-emerald-500"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span className="text-emerald-600">Saved!</span>
+                </>
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
+                  Save
+                </>
+              )}
+            </motion.button>
+
+            {/* Run Query button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={runQuery}
+              disabled={validNodeCount < 2 || loading}
+              className="flex items-center justify-center gap-2 bg-button2 hover:bg-hoverButton text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-200 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      opacity="0.25"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Running...
+                </>
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  Run Query
+                </>
+              )}
+            </motion.button>
+          </div>
         </div>
 
         {/* Controls bar */}
@@ -1076,21 +1165,6 @@ const FunnelManagementPage = () => {
             onChange={(e) => setToDate(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 outline-none transition"
           />
-
-          <div className="hidden sm:block w-px h-6 bg-gray-200 mx-2" />
-
-          <span className="text-sm font-medium text-gray-600 shrink-0">
-            Presets
-          </span>
-          {Object.keys(PRESETS).map((name) => (
-            <button
-              key={name}
-              onClick={() => applyPreset(name)}
-              className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition"
-            >
-              {name}
-            </button>
-          ))}
         </motion.div>
 
         {/* Tree builder */}
