@@ -12,6 +12,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => {},
   logout: async () => {},
+  loginWithGoogle: async () => {},
 });
 
 const AuthContextProvider = ({ children }: { children: ReactNode }) => {
@@ -69,6 +71,22 @@ const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const data = await authApi.getMe();
+      const { user } = data;
+      if (user) {
+        AppStorage.set("user", user);
+        setIsAuthenticated(true);
+        setUser(user);
+        setAnalyticsUserId(user._id);
+      }
+    } catch (error) {
+      console.error("Google login error:", error);
+      throw error;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -77,6 +95,7 @@ const AuthContextProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        loginWithGoogle,
       }}
     >
       {children}

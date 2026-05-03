@@ -37,6 +37,10 @@ export const authApi = {
     logout: async () => {
         return apiService.post(Contacts.API_CONFIG.AUTH.LOGOUT.URL);
     },
+
+    getMe: async () => {
+        return apiService.get<LoginResponse>(Contacts.API_CONFIG.AUTH.ME.URL);
+    },
 };
 
 export const adminProtected = async () => {

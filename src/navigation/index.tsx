@@ -38,6 +38,7 @@ import BranchManagementPage from "../pages/admin/BranchManagementPage";
 import FunnelManagementPage from "../pages/admin/FunnelManagementPage";
 import FunnelListPage from "../pages/admin/FunnelListPage";
 import CategoryPage from "../pages/category/CategoryPage";
+import GoogleCallbackPage from "../pages/login/GoogleCallbackPage";
 import AllProductsPage from "../pages/allProducts/AllProductsPage";
 import { Navigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -82,6 +83,7 @@ export const AppRoutes = {
   ADMIN_FUNNEL: "/admin/funnel",
   CATEGORY: "/categories/:categoryId",
   ALL_PRODUCTS: "/products",
+  GOOGLE_CALLBACK: "/auth/google/callback",
 };
 
 const STAFF_ROLES = new Set<UserRole>([
@@ -183,6 +185,10 @@ const AnimatedRoutes = () => {
                 <SignUpPage action="signup" />
               </Mainlayout>
             }
+          />
+          <Route
+            path={AppRoutes.GOOGLE_CALLBACK}
+            element={<GoogleCallbackPage />}
           />
           <Route
             path={AppRoutes.ABOUT}
