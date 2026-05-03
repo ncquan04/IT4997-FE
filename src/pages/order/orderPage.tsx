@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageTransition from "../../components/common/PageTransition";
 import OrderList from "./component/orderlist";
 import OrderSidebar from "./component/orderSideBar";
 import { Contacts } from "../../shared/contacts";
@@ -27,6 +28,7 @@ export default function OrdersPage() {
     }, [filter]);
 
     return (
+        <PageTransition>
         <div
             className="
                 w-full
@@ -44,5 +46,6 @@ export default function OrdersPage() {
                 <OrderList orders={orders} />
             </div>
         </div>
+        </PageTransition>
     );
 }

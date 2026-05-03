@@ -594,8 +594,7 @@ const FunnelListPage = () => {
         {customFunnels.length === 0 && (
           <div className="mt-8 text-center py-6 border border-dashed border-gray-200 rounded-xl">
             <p className="text-sm text-gray-400">
-              No saved funnels yet. Create one or customize a template to save
-              it here.
+              No saved funnels yet
             </p>
           </div>
         )}

@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import PageTransition from "../../components/common/PageTransition";
 import { useSearchParams } from "react-router";
 import {
   useAppDispatch,
@@ -76,6 +77,7 @@ const SearchPage = () => {
   }
 
   return (
+    <PageTransition>
     <div className="max-w-[1024px] mx-auto w-full">
       <div className="mb-3 text-sm text-gray-600 py-[20px]">
         {all ? (
@@ -96,6 +98,7 @@ const SearchPage = () => {
         />
       </div>
     </div>
+    </PageTransition>
   );
 };
 

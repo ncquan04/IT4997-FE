@@ -11,6 +11,7 @@ import categoriesAync from "../../redux/async-thunk/categories.thunk";
 import { AppRoutes } from "../../navigation";
 import { HORIZONTAL_PADDING_REM } from "../../constants";
 import { logEvent } from "../../utils/analytics";
+import PageTransition from "../../components/common/PageTransition";
 
 type PriceSort = "" | "price_asc" | "price_desc";
 
@@ -204,6 +205,7 @@ const CategoryPage = () => {
   }, [isParent, parentCategory, category]);
 
   return (
+    <PageTransition>
     <div
       className="w-full px-4 sm:px-6 md:px-8 lg:px-(--horizontal-padding) py-5 flex flex-col gap-4"
       style={
@@ -418,6 +420,7 @@ const CategoryPage = () => {
         />
       )}
     </div>
+    </PageTransition>
   );
 };
 

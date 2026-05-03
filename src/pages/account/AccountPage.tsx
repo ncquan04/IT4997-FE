@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageTransition from "../../components/common/PageTransition";
 import CommonButton from "../../components/common/CommonButton";
 import {
   fetchMyWarranties,
@@ -109,6 +110,7 @@ const AccountPage = () => {
   };
 
   return (
+    <PageTransition>
     <div className="w-full flex justify-center pt-20 pb-24 px-4 md:px-0">
       <div className="w-full max-w-[1170px] flex flex-col gap-10 md:gap-20">
         <div className="flex flex-col md:flex-row w-full gap-8 md:gap-[100px]">
@@ -628,6 +630,7 @@ const AccountPage = () => {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 };
 

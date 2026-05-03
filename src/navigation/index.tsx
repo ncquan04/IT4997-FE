@@ -1,4 +1,5 @@
-import { Route, BrowserRouter, Routes } from "react-router-dom";
+import { Route, BrowserRouter, Routes, useLocation, useNavigationType } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import HomePage from "../pages/home/HomePage";
 import NavBar from "../components/navBar/NavBar";
 import Footer from "../components/footer/Footer";
@@ -39,6 +40,7 @@ import FunnelListPage from "../pages/admin/FunnelListPage";
 import CategoryPage from "../pages/category/CategoryPage";
 import AllProductsPage from "../pages/allProducts/AllProductsPage";
 import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { UserRole } from "../shared/models/user-model";
 import { usePageView } from "../hooks/usePageView";
@@ -123,17 +125,40 @@ const AdminLayout = ({ children }: { children: any }) => {
   );
 };
 
+const ScrollRestorer = () => {
+  const { pathname, key } = useLocation();
+  const navigationType = useNavigationType();
+
+  useEffect(() => {
+    if (navigationType === "POP") {
+      const saved = sessionStorage.getItem(`scroll_${key}`);
+      if (saved) {
+        requestAnimationFrame(() => {
+          window.scrollTo(0, parseInt(saved, 10));
+        });
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+
+    return () => {
+      sessionStorage.setItem(`scroll_${key}`, String(window.scrollY));
+    };
+  }, [pathname]);
+
+  return null;
+};
+
 const PageViewTracker = () => {
   usePageView();
   return null;
 };
 
-const RootNavigation = () => {
+const AnimatedRoutes = () => {
+  const location = useLocation();
   return (
-    <>
-      <BrowserRouter>
-        <PageViewTracker />
-        <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
           <Route path={AppRoutes.DEFAULT} element={<RootRedirect />} />
           <Route
             path={AppRoutes.HOME}
@@ -411,7 +436,18 @@ const RootNavigation = () => {
               </Mainlayout>
             }
           />
-        </Routes>
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
+const RootNavigation = () => {
+  return (
+    <>
+      <BrowserRouter>
+        <ScrollRestorer />
+        <PageViewTracker />
+        <AnimatedRoutes />
       </BrowserRouter>
     </>
   );

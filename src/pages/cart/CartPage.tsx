@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import PageTransition from "../../components/common/PageTransition";
 import { useNavigate } from "react-router-dom";
 import { HORIZONTAL_PADDING_REM } from "../../constants";
 import { useI18n } from "../../contexts/I18nContext";
@@ -65,6 +66,7 @@ const CartPage = () => {
   }
 
   return (
+    <PageTransition>
     <main
       className="flex flex-col gap-16 px-4 md:px-8 lg:px-(--horizontal-padding)"
       style={
@@ -130,6 +132,7 @@ const CartPage = () => {
         <CartTotal total={totalPrice} />
       </div>
     </main>
+    </PageTransition>
   );
 };
 

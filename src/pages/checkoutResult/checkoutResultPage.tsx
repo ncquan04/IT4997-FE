@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import PageTransition from "../../components/common/PageTransition";
 import { useNavigate, useParams } from "react-router";
 import { Contacts } from "../../shared/contacts";
 import { CheckUpdatePayment } from "../../services/api/api.payment";
@@ -71,6 +72,7 @@ export default function CheckoutResultPage() {
     const { title, message, color } = renderContent();
 
     return (
+        <PageTransition>
         <div className="flex justify-center items-center h-[70vh]">
             <div className="bg-white shadow-md rounded-xl p-8 text-center max-w-md w-full">
                 <h1 className={`text-2xl font-semibold mb-3 ${color}`}>{title}</h1>
@@ -84,5 +86,6 @@ export default function CheckoutResultPage() {
                 </button>
             </div>
         </div>
+        </PageTransition>
     );
 }

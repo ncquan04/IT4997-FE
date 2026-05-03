@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useMemo, useState } from "react";
+import PageTransition from "../../components/common/PageTransition";
 import { useNavigate, useSearchParams } from "react-router";
 import {
   useAppDispatch,
@@ -177,6 +178,7 @@ const AllProductsPage = () => {
   if (page === 0 && isLoading) return <LoadingScreen />;
 
   return (
+    <PageTransition>
     <div
       className="w-full px-4 sm:px-6 md:px-8 lg:px-(--horizontal-padding) py-5 flex flex-col gap-4"
       style={
@@ -646,6 +648,7 @@ const AllProductsPage = () => {
         />
       )}
     </div>
+    </PageTransition>
   );
 };
 

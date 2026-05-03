@@ -43,8 +43,12 @@ const HomePage = () => {
     const isLoading = useAppSelector((state: RootState) => state.products.isLoading);
 
     useEffect(() => {
-        dispatch(productAsync.fetchProduct({}));
-        dispatch(categoriesAync.fectchCategories());
+        if (products.length === 0) {
+            dispatch(productAsync.fetchProduct({}));
+        }
+        if (categories.length === 0) {
+            dispatch(categoriesAync.fectchCategories());
+        }
     }, []);
 
     if (isLoading) {

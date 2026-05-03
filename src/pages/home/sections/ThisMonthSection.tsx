@@ -21,7 +21,7 @@ const ThisMonthSection = (props: ThisMonthSectionProps) => {
         <CommonButton
           label="View All Products"
           onClick={() => {
-            navigate("/search?all=true");
+            navigate("/products");
           }}
           style={{ alignSelf: "center" }}
           className="w-full sm:w-40 md:w-44 h-12 md:h-14"

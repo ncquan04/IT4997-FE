@@ -7,20 +7,28 @@ import RelatedItems from "./components/RelatedItems";
 import type { Product } from "../../shared/models/product-model";
 import { fetchProductById } from "../../services/api/api.products";
 import ProductSpecs from "./components/ProductSpecs";
+import LoadingScreen from "../../components/common/LoadingScreen";
 
 const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setIsLoading(true);
     const fetchProduct = async () => {
       const product = await fetchProductById(productId!);
       setProduct(product);
+      setIsLoading(false);
     };
     fetchProduct();
   }, [productId]);
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   if (!product) {
     return (
