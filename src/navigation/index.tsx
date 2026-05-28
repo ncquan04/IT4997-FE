@@ -26,6 +26,7 @@ import OrderManagementPage from "../pages/admin/OrderManagementPage";
 import InventoryManagementPage from "../pages/admin/InventoryManagementPage";
 import StockImportManagementPage from "../pages/admin/StockImportManagementPage";
 import StockExportManagementPage from "../pages/admin/StockExportManagementPage";
+import StockTransferManagementPage from "../pages/admin/StockTransferManagementPage";
 import WarrantyManagementPage from "../pages/admin/WarrantyManagementPage";
 import CouponManagementPage from "../pages/admin/CouponManagementPage";
 import DiscountProgramManagementPage from "../pages/admin/DiscountProgramManagementPage";
@@ -71,6 +72,7 @@ export const AppRoutes = {
   ADMIN_INVENTORY: "/admin/inventory",
   ADMIN_STOCK_IMPORTS: "/admin/stock-imports",
   ADMIN_STOCK_EXPORTS: "/admin/stock-exports",
+  ADMIN_STOCK_TRANSFERS: "/admin/stock-transfers",
   ADMIN_WARRANTY: "/admin/warranty",
   ADMIN_COUPONS: "/admin/coupons",
   ADMIN_DISCOUNT_PROGRAMS: "/admin/discount-programs",
@@ -343,6 +345,14 @@ const AnimatedRoutes = () => {
             element={
               <AdminLayout>
                 <StockExportManagementPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path={AppRoutes.ADMIN_STOCK_TRANSFERS}
+            element={
+              <AdminLayout>
+                <StockTransferManagementPage />
               </AdminLayout>
             }
           />

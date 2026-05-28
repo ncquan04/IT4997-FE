@@ -252,6 +252,27 @@ const AdminDashboard = () => {
           link: AppRoutes.ADMIN_STOCK_EXPORTS,
           color: "bg-orange-500",
         },
+        {
+          title: "Stock Transfer",
+          description: "Move inventory between branches and track in-transit stock",
+          icon: (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M8 7h12m0 0l-4-4m4 4l-4 4m4 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          ),
+          link: AppRoutes.ADMIN_STOCK_TRANSFERS,
+          color: "bg-indigo-500",
+        },
       ],
     },
     {
