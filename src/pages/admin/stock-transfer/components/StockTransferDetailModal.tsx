@@ -30,16 +30,24 @@ const StockTransferDetailModal = ({
   const toId = detail?.toBranchId?._id;
   const userBranchId = user?.branchId;
 
+  // Only roles the BE status endpoint accepts may mutate; otherwise the buttons
+  // would just 403. (Matches verifyRole([ADMIN, MANAGER, WAREHOUSE]).)
+  const canMutate =
+    isAdmin ||
+    user?.role === UserRole.MANAGER ||
+    user?.role === UserRole.WAREHOUSE;
+
   // Approve outgoing transfer: only the FROM-branch staff (or admin).
   const canApprove =
-    isAdmin || (!!userBranchId && fromId === userBranchId);
+    canMutate && (isAdmin || (!!userBranchId && fromId === userBranchId));
   // Receive incoming transfer: only the TO-branch staff (or admin).
   const canComplete =
-    isAdmin || (!!userBranchId && toId === userBranchId);
+    canMutate && (isAdmin || (!!userBranchId && toId === userBranchId));
   // Cancel: either party (or admin).
   const canCancel =
-    isAdmin ||
-    (!!userBranchId && (fromId === userBranchId || toId === userBranchId));
+    canMutate &&
+    (isAdmin ||
+      (!!userBranchId && (fromId === userBranchId || toId === userBranchId)));
 
   const isTransitionAllowed = (nextStatus: number) => {
     if (nextStatus === STATUS_TRANSFER.IN_TRANSIT) return canApprove;
