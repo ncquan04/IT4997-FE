@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useI18n } from "../../../contexts/I18nContext";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 
 interface PageSelectorProps {
@@ -10,7 +10,13 @@ interface PageSelectorProps {
 const PageSelector = ({ mobile = false }: PageSelectorProps) => {
   const i18n = useI18n();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated, logout } = useAuth();
+
+  const handleLogout = useCallback(async () => {
+    await logout();
+    navigate("/");
+  }, [logout, navigate]);
 
   const pages = useMemo(() => {
     type PageItem =
@@ -22,12 +28,12 @@ const PageSelector = ({ mobile = false }: PageSelectorProps) => {
       { name: "Contact", path: "/contact" },
       { name: "About", path: "/about" },
       isAuthenticated
-        ? { name: "Log Out", action: logout }
+        ? { name: "Log Out", action: handleLogout }
         : { name: "Log In", path: "/login" },
     ];
 
     return items.filter((page): page is PageItem => page !== undefined);
-  }, [isAuthenticated, logout]);
+  }, [isAuthenticated, handleLogout]);
 
   if (mobile) {
     return (
