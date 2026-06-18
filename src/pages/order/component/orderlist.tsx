@@ -59,7 +59,8 @@ export default function OrderList({ orders }: { orders: any[] }) {
             {/* Footer */}
             <div className="flex justify-between items-center mt-4">
               <span className="font-semibold text-red-500 text-sm">
-                {order.sumPrice.toLocaleString()} ₫
+                {(order.payment?.totalMoney ?? order.sumPrice).toLocaleString()}
+                {""}₫
               </span>
 
               <button className="text-sm text-blue-600 hover:underline">

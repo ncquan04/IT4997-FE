@@ -28,6 +28,7 @@ const STATUS_LABEL: Record<number, string> = {
 interface IOrderExtended extends IOrder {
   createdAt?: string;
   updatedAt?: string;
+  payment?: IPayment;
 }
 
 interface OrderTableProps {
@@ -165,7 +166,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(order.sumPrice)}
+                    }).format(order.payment?.totalMoney ?? order.sumPrice)}
                   </span>
                 </div>
 
@@ -298,7 +299,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
                       currency: "VND",
-                    }).format(order.sumPrice)}
+                    }).format(order.payment?.totalMoney ?? order.sumPrice)}
                   </td>
                   <td className="p-5">
                     <div className="flex flex-col gap-1">
