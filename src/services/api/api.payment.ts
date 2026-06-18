@@ -45,6 +45,18 @@ export const CheckUpdatePayment = async ({ id }: { id: string }) => {
   }
 };
 
+export const confirmPayment = async ({ sessionId }: { sessionId: string }) => {
+  try {
+    const response = await apiService.get<
+      (typeof PAYMENT_STATUS_CHECK)[keyof typeof PAYMENT_STATUS_CHECK]
+    >(API_PATH.PAYMENT.CONFIRM(sessionId).URL);
+    return response;
+  } catch (err: any) {
+    console.log("Confirm payment error: ", err);
+    return null;
+  }
+};
+
 export const putChangePaymentStatus = async ({
   status,
   paymentId,

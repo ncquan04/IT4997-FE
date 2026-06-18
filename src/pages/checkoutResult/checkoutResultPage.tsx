@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import PageTransition from "../../components/common/PageTransition";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { Contacts } from "../../shared/contacts";
-import { CheckUpdatePayment } from "../../services/api/api.payment";
+import {
+    CheckUpdatePayment,
+    confirmPayment,
+} from "../../services/api/api.payment";
 
 const PAYMENT_STATUS = Contacts.Status.Payment_check_update;
 
 export default function CheckoutResultPage() {
     const { id } = useParams<{ id: string }>();
+    const [searchParams] = useSearchParams();
+    const sessionId = searchParams.get("session_id");
     const navigate = useNavigate();
 
     const [status, setStatus] = useState<
@@ -16,12 +21,14 @@ export default function CheckoutResultPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!id) return;
-
         const checkOrderStatus = async () => {
             try {
-                const res = await CheckUpdatePayment({ id: id });
-                if (res === null) {
+                const res = sessionId
+                    ? await confirmPayment({ sessionId })
+                    : id
+                      ? await CheckUpdatePayment({ id })
+                      : null;
+                if (res === null || res === undefined) {
                     throw new Error("");
                 }
                 setStatus(res);
@@ -33,7 +40,7 @@ export default function CheckoutResultPage() {
         };
 
         checkOrderStatus();
-    }, [id]);
+    }, [id, sessionId]);
 
     const renderContent = () => {
         switch (status) {
@@ -47,7 +54,8 @@ export default function CheckoutResultPage() {
             case PAYMENT_STATUS.PROCESS:
                 return {
                     title: "⏳ Đơn hàng đang xử lý",
-                    message: "Bạn đã chọn COD. Vui lòng chờ xác nhận.",
+                    message:
+                        "Đơn hàng của bạn đang được xử lý. Vui lòng kiểm tra lại trong mục Đơn hàng.",
                     color: "text-yellow-600",
                 };
 
