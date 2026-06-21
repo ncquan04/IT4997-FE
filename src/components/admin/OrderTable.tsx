@@ -48,6 +48,12 @@ interface OrderTableProps {
       userId: { _id: string; email: string; fullName: string; phone: string };
     },
   ) => void;
+  onViewClick?: (
+    order: IOrder & {
+      payment: IPayment;
+      userId: { _id: string; email: string; fullName: string; phone: string };
+    },
+  ) => void;
   isLoading?: boolean;
   currentPage: number;
   totalPages: number;
@@ -58,6 +64,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
   orders,
   onStatusChange,
   onShipClick,
+  onViewClick,
   isLoading,
   currentPage,
   totalPages,
@@ -191,6 +198,14 @@ const OrderTable: React.FC<OrderTableProps> = ({
 
                 {/* Row 4: Actions */}
                 <div className="flex items-center gap-2 flex-wrap pt-1">
+                  {onViewClick && (
+                    <button
+                      onClick={() => onViewClick(orderItem as any)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
+                    >
+                      👁 Detail
+                    </button>
+                  )}
                   {order.statusOrder === O.PROCESSING && onShipClick && (
                     <button
                       onClick={() => onShipClick(orderItem as any)}
@@ -318,6 +333,15 @@ const OrderTable: React.FC<OrderTableProps> = ({
                   </td>
                   <td className="p-5">
                     <div className="flex items-center gap-2 flex-wrap">
+                      {/* View detail — always available */}
+                      {onViewClick && (
+                        <button
+                          onClick={() => onViewClick(orderItem as any)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium hover:bg-gray-200 transition-colors"
+                        >
+                          👁 Detail
+                        </button>
+                      )}
                       {/* Ship button — only for PROCESSING orders */}
                       {order.statusOrder === O.PROCESSING && onShipClick && (
                         <button

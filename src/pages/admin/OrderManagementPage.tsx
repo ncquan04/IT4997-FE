@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import OrderTable from "../../components/admin/OrderTable";
 import ImeiSelectionModal from "../../components/admin/ImeiSelectionModal";
+import OrderDetailModal from "../../components/admin/OrderDetailModal";
 import { useAppDispatch, useAppSelector } from "../../redux/store";
 import orderAsync from "../../redux/async-thunk/order.thunk";
 import { useToast } from "../../contexts/ToastContext";
@@ -24,6 +25,7 @@ const OrderManagementPage = () => {
   const [shipModalOrder, setShipModalOrder] = useState<OrderWithExtra | null>(
     null,
   );
+  const [detailOrder, setDetailOrder] = useState<OrderWithExtra | null>(null);
 
   const loadData = async (page: number) => {
     try {
@@ -130,6 +132,7 @@ const OrderManagementPage = () => {
           onPageChange={loadData}
           onStatusChange={handleStatusChange}
           onShipClick={(order) => setShipModalOrder(order as any)}
+          onViewClick={(order) => setDetailOrder(order as any)}
         />
 
         {/* Ship Confirm Modal */}
@@ -138,6 +141,14 @@ const OrderManagementPage = () => {
             order={shipModalOrder}
             onClose={() => setShipModalOrder(null)}
             onSuccess={handleShipSuccess}
+          />
+        )}
+
+        {/* Order Detail Modal */}
+        {detailOrder && (
+          <OrderDetailModal
+            order={detailOrder}
+            onClose={() => setDetailOrder(null)}
           />
         )}
       </div>
