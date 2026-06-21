@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { IInventoryItem } from "../../types/inventory.types";
 
 interface InventoryTableProps {
@@ -17,6 +18,31 @@ const formatPrice = (price?: number) => {
   }).format(price);
 };
 
+// Nút xem IMEI — icon-only, đồng bộ với nút "View" eye ở StockImportTable.
+const ViewImeiButton = ({ onClick }: { onClick: () => void }) => (
+  <button
+    onClick={onClick}
+    title="Xem IMEI"
+    aria-label="Xem IMEI"
+    className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 transition-colors"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  </button>
+);
+
 const InventoryTable = ({
   items,
   isLoading,
@@ -24,6 +50,8 @@ const InventoryTable = ({
   totalPages,
   onPageChange,
 }: InventoryTableProps) => {
+  const [viewItem, setViewItem] = useState<IInventoryItem | null>(null);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-gray-500">
@@ -89,6 +117,11 @@ const InventoryTable = ({
                   {new Date(item.updatedAt).toLocaleDateString("vi-VN")}
                 </span>
               </div>
+
+              {/* Action */}
+              <div className="flex justify-end pt-1">
+                <ViewImeiButton onClick={() => setViewItem(item)} />
+              </div>
             </motion.div>
           ))
         )}
@@ -116,6 +149,9 @@ const InventoryTable = ({
               </th>
               <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider">
                 Updated
+              </th>
+              <th className="p-5 font-semibold text-gray-500 text-sm uppercase tracking-wider text-center">
+                Actions
               </th>
             </tr>
           </thead>
@@ -172,12 +208,15 @@ const InventoryTable = ({
                 <td className="p-5 text-gray-600 text-sm">
                   {new Date(item.updatedAt).toLocaleString("vi-VN")}
                 </td>
+                <td className="p-5 text-center">
+                  <ViewImeiButton onClick={() => setViewItem(item)} />
+                </td>
               </motion.tr>
             ))}
 
             {items.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-12 text-center text-gray-400">
+                <td colSpan={7} className="p-12 text-center text-gray-400">
                   No inventory records found.
                 </td>
               </tr>
@@ -210,6 +249,106 @@ const InventoryTable = ({
           </div>
         </div>
       )}
+
+      {/* ── IMEI modal ── */}
+      <AnimatePresence>
+        {viewItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setViewItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-gray-100 shrink-0">
+                <h2 className="text-xl font-bold text-gray-900">
+                  IMEI tồn kho
+                </h2>
+                <button
+                  onClick={() => setViewItem(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Đóng"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                {/* Summary */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-sm text-gray-400 mb-1.5">Sản phẩm</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {viewItem.product?.title ?? "—"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-sm text-gray-400 mb-1.5">Phiên bản</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {viewItem.variant?.variantName ?? "—"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-sm text-gray-400 mb-1.5">Chi nhánh</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {viewItem.branch?.name ?? "—"}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-sm text-gray-400 mb-1.5">Số lượng</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {viewItem.quantity}
+                    </p>
+                  </div>
+                </div>
+
+                {/* IMEI list */}
+                <div>
+                  <h3 className="text-base font-semibold text-gray-800 mb-3">
+                    IMEI còn lại ({viewItem.imeiList?.length ?? 0})
+                  </h3>
+                  {viewItem.imeiList && viewItem.imeiList.length > 0 ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {viewItem.imeiList.map((imei) => (
+                        <span
+                          key={imei}
+                          className="font-mono text-xs bg-white border border-gray-200 rounded px-2 py-0.5 text-gray-600"
+                        >
+                          {imei}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">
+                      Sản phẩm này không quản lý theo IMEI (hoặc kho đang trống).
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
