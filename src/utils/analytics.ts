@@ -17,8 +17,6 @@ interface EventPayload {
   timestamp: number;
 }
 
-// ─── Identity Management ─────────────────────────────────────────────────────
-
 function getAnonymousId(): string {
   let id = localStorage.getItem(ANON_ID_KEY);
   if (!id) {
@@ -37,18 +35,14 @@ function getSessionId(): string {
   return id;
 }
 
-// userId can be set after login
 let _userId: string | null = null;
 
 export function setAnalyticsUserId(userId: string | null) {
   _userId = userId;
-  // When user logs in, fire an identify event to link anonymous → user
-  if (userId) {
-    logEvent("identify", { userId });
-  }
+  // if (userId) {
+  //   logEvent("identify", { userId });
+  // }
 }
-
-// ─── Core logEvent ───────────────────────────────────────────────────────────
 
 export function logEvent(eventName: string, params?: Record<string, any>) {
   const payload: EventPayload = {
@@ -69,8 +63,6 @@ export function logEvent(eventName: string, params?: Record<string, any>) {
   }
 }
 
-// ─── Flush ───────────────────────────────────────────────────────────────────
-
 function flushEvents() {
   if (eventBuffer.length === 0) return;
 
@@ -82,7 +74,6 @@ function flushEvents() {
       import.meta.env?.VITE_API_BASE_URL ||
       "http://localhost:4000/api") + "/events/track";
 
-  // Use Beacon API for reliability (works even when tab is closing)
   if (navigator.sendBeacon) {
     navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
   } else {
@@ -91,24 +82,17 @@ function flushEvents() {
       headers: { "Content-Type": "application/json" },
       body,
       keepalive: true,
-    }).catch(() => {
-      // silently fail - analytics should never break the app
-    });
+    }).catch(() => {});
   }
 }
-
-// ─── Auto-flush setup ────────────────────────────────────────────────────────
 
 export function initAnalytics() {
   if (flushTimer) return;
 
-  // Periodic flush
   flushTimer = setInterval(flushEvents, FLUSH_INTERVAL);
 
-  // Flush on page unload
   window.addEventListener("beforeunload", flushEvents);
 
-  // Flush on visibility change (user switches tab)
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") {
       flushEvents();
