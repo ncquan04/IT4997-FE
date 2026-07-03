@@ -17,6 +17,7 @@ export default class Socket {
             `${import.meta.env.VITE_ENDPOINT || "http://localhost:4001"}/${namespace}`,
             {
                 path: "/socket",
+                withCredentials: true,
                 reconnection: true,
                 reconnectionDelay: 1000,
                 reconnectionDelayMax: 5000,
