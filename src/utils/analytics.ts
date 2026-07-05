@@ -69,10 +69,14 @@ function flushEvents() {
   const batch = eventBuffer.splice(0, MAX_BATCH);
   const body = JSON.stringify({ events: batch });
 
-  const url =
-    (import.meta.env?.VITE_ENDPOINT ||
-      import.meta.env?.VITE_API_BASE_URL ||
-      "http://localhost:4000/api") + "/events/track";
+  const base = (
+    import.meta.env?.VITE_ENDPOINT ||
+    import.meta.env?.VITE_API_BASE_URL ||
+    "http://localhost:4000"
+  )
+    .replace(/\/+$/, "")
+    .replace(/\/api$/, "");
+  const url = `${base}/api/events/track`;
 
   if (navigator.sendBeacon) {
     navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
