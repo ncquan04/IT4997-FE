@@ -97,10 +97,6 @@ export const geocodeAddress = async (
   }
 };
 
-/**
- * Sort branches by distance from userPoint. Returns branchIds in nearest-first order.
- * Branches that cannot be geocoded are placed at the end.
- */
 export const sortBranchesByDistance = async (
   branches: Array<{ branchId: string; address: string }>,
   userPoint: GeoPoint,

@@ -15,7 +15,6 @@ import {
 } from "../../services/api/api.warranty";
 import { SearchProducts } from "../../services/api/api.search";
 
-// ─── Mode ─────────────────────────────────────────────────────────────────────
 type FormMode = "store" | "walkin";
 
 interface LookupResult {
@@ -41,7 +40,6 @@ const fc =
 const lc = "block text-xs font-semibold text-gray-600 mb-1";
 const ec = "text-red-500 text-xs mt-1";
 
-// ─── InfoChip ─────────────────────────────────────────────────────────────────
 const InfoChip = ({
   label,
   value,
@@ -61,7 +59,6 @@ const InfoChip = ({
   </div>
 );
 
-// ─── WarrantyForm ─────────────────────────────────────────────────────────────
 const WarrantyForm = ({
   branches,
   fixedBranchId,
@@ -97,7 +94,6 @@ const WarrantyForm = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // ── Image upload ───────────────────────────────────────────────────────
   const handleImageFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const remaining = 5 - images.length;
@@ -115,7 +111,6 @@ const WarrantyForm = ({
   const removeImage = (idx: number) =>
     setImages((prev) => prev.filter((_, i) => i !== idx));
 
-  // ── IMEI lookup ─────────────────────────────────────────────────────────
   const handleImeiLookup = async () => {
     if (!storeImei.trim()) return;
     setIsLooking(true);
@@ -144,7 +139,6 @@ const WarrantyForm = ({
     });
   };
 
-  // ── Product search ─────────────────────────────────────────────────────
   const handleProductSearch = async () => {
     if (productSearch.trim().length < 2) return;
     setIsSearchingProduct(true);
@@ -156,7 +150,6 @@ const WarrantyForm = ({
     setProductOptions(res?.products ?? []);
   };
 
-  // ── Mode switch ────────────────────────────────────────────────────────
   const switchMode = (m: FormMode) => {
     setMode(m);
     setErrors({});
@@ -177,7 +170,6 @@ const WarrantyForm = ({
     setEstimatedDate("");
   };
 
-  // ── Validation ─────────────────────────────────────────────────────────
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (mode === "store") {
@@ -209,7 +201,6 @@ const WarrantyForm = ({
     return Object.keys(errs).length === 0;
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -256,7 +247,6 @@ const WarrantyForm = ({
     setIsSaving(false);
   };
 
-  // ──────────────────────────────────────────────────────────────────────
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -309,7 +299,6 @@ const WarrantyForm = ({
       {/* Body */}
       <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
         <form id="warranty-form" onSubmit={handleSubmit} className="space-y-6">
-          {/* ── Mode 1: Mua tại cửa hàng ── */}
           {mode === "store" && (
             <section>
               <h3 className={lc + " mb-3"}>Tra cứu IMEI / Serial</h3>
@@ -445,7 +434,6 @@ const WarrantyForm = ({
             </section>
           )}
 
-          {/* ── Mode 2: Khách vãng lai ── */}
           {mode === "walkin" && (
             <>
               <section>
@@ -631,7 +619,6 @@ const WarrantyForm = ({
             </>
           )}
 
-          {/* ── Shared: tình trạng ── */}
           <section>
             <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wide mb-3">
               Tình trạng tiếp nhận

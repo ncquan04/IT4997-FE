@@ -3,8 +3,6 @@ import { apiService } from "./index";
 
 const BASE = Contacts.EVENT_PATH;
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 export type FilterOp =
   | "in"
   | "not_in"
@@ -64,8 +62,6 @@ export interface FunnelQueryBody {
   to?: number; // Unix ms
 }
 
-// ─── Branching tree funnel ───────────────────────────────────────────────────
-
 export interface FunnelTreeNodeDef {
   id: string;
   parentId: string | null;
@@ -96,8 +92,6 @@ export interface FunnelTreeQueryBody {
   from?: number;
   to?: number;
 }
-
-// ─── API Calls ───────────────────────────────────────────────────────────────
 
 export const eventApi = {
   queryFunnel: (body: FunnelQueryBody) =>

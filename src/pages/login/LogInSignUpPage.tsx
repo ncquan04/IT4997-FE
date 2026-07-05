@@ -157,7 +157,6 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
         className="w-full min-h-screen flex items-center justify-center bg-gray-50 md:bg-white px-4 py-12 md:px-0 md:py-0 overflow-hidden"
       >
         <AnimatePresence mode="wait">
-          {/* ── Mobile: centered card ── */}
           <motion.div
             key={props.action + "-mobile"}
             initial={{ opacity: 0, y: 24 }}
@@ -221,7 +220,6 @@ const LogInSignUpPage = (props: LogInSignUpPageProps) => {
             </form>
           </motion.div>
 
-          {/* ── Desktop: original two-column layout ── */}
           <div className="hidden md:flex w-full h-screen">
             <motion.aside
               key={props.action + "-aside"}

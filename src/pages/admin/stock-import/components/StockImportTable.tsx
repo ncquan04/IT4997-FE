@@ -50,7 +50,6 @@ const StockImportTable = ({
       </div>
     ) : (
       <>
-        {/* ── Mobile card list (< md) ── */}
         <div className="block md:hidden divide-y divide-gray-100">
           {items
             .filter((item) =>
@@ -128,7 +127,6 @@ const StockImportTable = ({
             })}
         </div>
 
-        {/* ── Desktop table (≥ md) ── */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm" style={{ minWidth: "900px" }}>
             <thead>

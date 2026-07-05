@@ -39,7 +39,6 @@ export const AttendanceTable = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {pagedRecords.map((r) => {
           const meta = STATUS_META[r.status];
@@ -100,7 +99,6 @@ export const AttendanceTable = ({
         })}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">

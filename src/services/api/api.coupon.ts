@@ -24,8 +24,6 @@ export const validateCoupon = async ({
   }
 };
 
-// ── Admin ────────────────────────────────────────────────────────────────────
-
 export const getAllCoupons = async (): Promise<ICoupon[]> => {
   try {
     const response = await apiService.get<ICoupon[]>(

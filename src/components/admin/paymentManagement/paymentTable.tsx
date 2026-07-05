@@ -115,7 +115,6 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {orders.map((order) => {
           const { payment } = order;
@@ -183,7 +182,6 @@ const PaymentOrdersTable = ({ orders, loading }: Props) => {
         })}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

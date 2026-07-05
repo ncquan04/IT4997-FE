@@ -31,7 +31,6 @@ const StockExportTable = ({
   onPageChange,
 }: StockExportTableProps) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    {/* ── Mobile card list (< md) ── */}
     <div className="block md:hidden divide-y divide-gray-100">
       {isLoading ? (
         <div className="p-10 text-center text-gray-400">Loading...</div>
@@ -90,7 +89,6 @@ const StockExportTable = ({
       )}
     </div>
 
-    {/* ── Desktop table (≥ md) ── */}
     <div className="hidden md:block overflow-x-auto">
       <table className="w-full text-left border-collapse">
         <thead>

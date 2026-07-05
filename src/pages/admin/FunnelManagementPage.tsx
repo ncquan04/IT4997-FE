@@ -29,10 +29,6 @@ import {
 } from "./FunnelListPage";
 import { AppRoutes } from "../../navigation";
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Constants                                                                 */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 const ALL_OPS = Object.keys(FILTER_OP_LABELS) as FilterOp[];
 const MULTI_VALUE_OPS = new Set<FilterOp>(["in", "not_in"]);
 const NO_VALUE_OPS = new Set<FilterOp>(["exists", "not_exists"]);
@@ -51,8 +47,6 @@ const mkNode = (
   return { _id, id: _id, parentId, eventName, filters };
 };
 
-/* ─── Preset funnels (flat tree arrays) ───────────────────────────────────── */
-
 const buildPreset = (
   defs: { parentIdx: number | null; eventName: string }[],
 ): TreeNode[] => {
@@ -63,10 +57,6 @@ const buildPreset = (
   }
   return nodes;
 };
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Tree helpers                                                              */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const getChildren = (nodes: TreeNode[], parentId: string | null) =>
   nodes.filter((n) => n.parentId === parentId);
@@ -95,10 +85,6 @@ const getDepth = (nodes: TreeNode[], nodeId: string): number => {
   }
   return d;
 };
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  React Flow — Funnel chart nodes                                           */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 type StepNodeData = {
   label: string;
@@ -177,8 +163,6 @@ const StepNode = memo(({ data }: NodeProps<Node<StepNodeData>>) => {
 StepNode.displayName = "StepNode";
 
 const flowNodeTypes = { step: StepNode };
-
-/* ─── Tree layout algorithm ───────────────────────────────────────────────── */
 
 const H_GAP = 50;
 const V_GAP = 70;
@@ -306,10 +290,6 @@ const FunnelFlowChart = ({
   );
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Tag Input                                                                 */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 const TagInput = ({
   values,
   suggestions,
@@ -374,10 +354,6 @@ const TagInput = ({
     </div>
   );
 };
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Filter Row                                                                */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const FilterRow = ({
   filter,
@@ -488,10 +464,6 @@ const FilterRow = ({
     </div>
   );
 };
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Tree Node Card                                                            */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const TreeNodeCard = ({
   node,
@@ -782,10 +754,6 @@ const TreeNodeCard = ({
   );
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Recursive Tree Builder                                                    */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 const TreeBuilder = ({
   nodes,
   parentId,
@@ -841,10 +809,6 @@ const TreeBuilder = ({
   );
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Main Page                                                                 */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 const loadFunnelById = (
   id: string | undefined,
 ): { funnel: SavedFunnel | null; nodes: TreeNode[] } => {
@@ -886,8 +850,6 @@ const FunnelManagementPage = () => {
       .then((r) => setEventNames(r.eventNames))
       .catch(() => {});
   }, []);
-
-  /* ─── Node operations ──────────────────────────────────────────────────── */
 
   const updateNode = useCallback((updated: TreeNode) => {
     setNodes((prev) => prev.map((n) => (n._id === updated._id ? updated : n)));
@@ -954,8 +916,6 @@ const FunnelManagementPage = () => {
 
   const handleBack = () => navigate(AppRoutes.ADMIN_FUNNEL);
 
-  /* ─── Query ─────────────────────────────────────────────────────────────── */
-
   const validNodeCount = nodes.filter((n) => n.eventName.trim()).length;
 
   const runQuery = useCallback(async () => {
@@ -984,8 +944,6 @@ const FunnelManagementPage = () => {
       setLoading(false);
     }
   }, [nodes, fromDate, toDate, validNodeCount]);
-
-  /* ─── Render ────────────────────────────────────────────────────────────── */
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 md:p-10">
@@ -1181,7 +1139,6 @@ const FunnelManagementPage = () => {
           />
         </motion.div>
 
-        {/* ─── Results ──────────────────────────────────────────────────────── */}
         <AnimatePresence>
           {results.length > 0 && (
             <motion.div

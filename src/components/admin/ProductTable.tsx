@@ -33,7 +33,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {products.length === 0 ? (
           <div className="p-10 text-center text-gray-400">
@@ -164,7 +163,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
         )}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>

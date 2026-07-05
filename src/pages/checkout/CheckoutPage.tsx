@@ -86,7 +86,6 @@ const CheckoutPage = () => {
   const [couponCode, setCouponCode] = useState("");
   const [couponDiscount, setCouponDiscount] = useState(0);
 
-  // ── Loyalty ────────────────────────────────────────────────────────────────
   const [memberInfo, setMemberInfo] = useState<IMemberInfo | null>(null);
   const [pointsInput, setPointsInput] = useState<string>("");
   const [pointsToRedeem, setPointsToRedeem] = useState(0);

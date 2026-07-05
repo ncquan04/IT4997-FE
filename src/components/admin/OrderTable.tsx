@@ -132,7 +132,6 @@ const OrderTable: React.FC<OrderTableProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {orders.length === 0 ? (
           <div className="p-10 text-center text-gray-400">No orders found.</div>
@@ -248,7 +247,6 @@ const OrderTable: React.FC<OrderTableProps> = ({
         )}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>

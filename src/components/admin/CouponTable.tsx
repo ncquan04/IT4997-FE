@@ -25,7 +25,6 @@ const CouponTable = ({
 
   return (
     <>
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {coupons.length === 0 ? (
           <div className="p-10 text-center text-gray-400">
@@ -142,7 +141,6 @@ const CouponTable = ({
         )}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>

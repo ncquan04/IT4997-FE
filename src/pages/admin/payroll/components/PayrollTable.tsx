@@ -35,7 +35,6 @@ const PayrollTable = ({
 
   return (
     <>
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {/* Bulk action bar */}
         {(records.some((r) => r.status === PayrollStatus.DRAFT) ||
@@ -234,7 +233,6 @@ const PayrollTable = ({
         })}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-100">

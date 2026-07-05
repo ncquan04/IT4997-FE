@@ -38,7 +38,6 @@ const BranchTable = ({
 
   return (
     <>
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         {branches.map((branch, index) => (
           <motion.div
@@ -128,7 +127,6 @@ const BranchTable = ({
         ))}
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>

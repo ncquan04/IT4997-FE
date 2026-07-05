@@ -2,14 +2,6 @@ import { useEffect, useRef } from "react";
 import { Socket as SocketType } from "socket.io-client";
 import Socket from "./socketConfig";
 
-/**
- * Accepts a function that contains multiple listeners to socket of your app.
- *
- * @param listener Define your listeners in here
- * @param deps If present, effect will only activate if the values in the list change.
- * @param disconnect use this when you want to disconnect to socket on component unmount from DOM
- */
-
 const useSocket = ({
     namespace,
     listener,

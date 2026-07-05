@@ -1,7 +1,5 @@
 import type { IBranch } from "../shared/models/branch-model";
 
-// ─── Populated sub-types (populated by server) ────────────────────────────────
-
 export interface IWarrantyCustomerPopulated {
   _id: string;
   userName: string;
@@ -18,8 +16,6 @@ export interface IWarrantyUserPopulated {
   _id: string;
   userName: string;
 }
-
-// ─── List ─────────────────────────────────────────────────────────────────────
 
 export interface IWarrantyListItem {
   _id: string;
@@ -58,8 +54,6 @@ export interface IWarrantyListResponse {
   };
 }
 
-// ─── Detail (extended populate) ───────────────────────────────────────────────
-
 export interface IWarrantyDetail extends Omit<
   IWarrantyListItem,
   "productId" | "receivedBy"
@@ -73,8 +67,6 @@ export interface IWarrantyDetail extends Omit<
     | string;
   receivedBy: IWarrantyUserPopulated | string;
 }
-
-// ─── Repair Log ───────────────────────────────────────────────────────────────
 
 export interface IRepairLogItem {
   _id: string;
@@ -92,8 +84,6 @@ export interface IRepairLogItem {
 export interface IRepairLogListResponse {
   data: IRepairLogItem[];
 }
-
-// ─── Repair Log History (cross-warranty, grouped by IMEI) ─────────────────────
 
 export interface IRepairLogHistoryItem extends Omit<
   IRepairLogItem,
@@ -114,8 +104,6 @@ export interface IRepairLogHistoryResponse {
   data: IRepairLogHistoryItem[];
 }
 
-// ─── Public repair history (unauthenticated, sanitized) ───────────────────────
-
 export interface IPublicRepairHistoryItem {
   date: string;
   action: string;
@@ -128,8 +116,6 @@ export interface IPublicRepairHistoryResponse {
   imei: string;
   data: IPublicRepairHistoryItem[];
 }
-
-// ─── Payloads ─────────────────────────────────────────────────────────────────
 
 export interface ICreateWarrantyPayload {
   customerId?: string; // optional — omit for walk-in customer
@@ -156,8 +142,6 @@ export interface ICreateRepairLogPayload {
   cost?: number;
   note?: string;
 }
-
-// ─── IMEI Lookup ──────────────────────────────────────────────────────────────
 
 export interface IImeiLookupResponse {
   data: IWarrantyListItem[];

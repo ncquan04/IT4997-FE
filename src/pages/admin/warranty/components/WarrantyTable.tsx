@@ -66,7 +66,6 @@ const WarrantyTable = ({
         </div>
       ) : (
         <>
-          {/* ── Mobile card list (< md) ── */}
           <div className="block md:hidden divide-y divide-gray-100">
             {items.map((item) => {
               const meta = STATUS_META[item.status] ?? {
@@ -127,7 +126,6 @@ const WarrantyTable = ({
             })}
           </div>
 
-          {/* ── Desktop table (≥ md) ── */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm" style={{ minWidth: "860px" }}>
               <thead>

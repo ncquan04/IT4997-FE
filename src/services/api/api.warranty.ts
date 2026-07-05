@@ -27,7 +27,6 @@ const buildQueryParams = (filters: IWarrantyListFilters): string => {
   return params.toString();
 };
 
-// ─── Danh sách yêu cầu bảo hành ───────────────────────────────────────────────
 export const fetchWarrantyList = async (
   filters: IWarrantyListFilters = {},
 ): Promise<IWarrantyListResponse | null> => {
@@ -43,7 +42,6 @@ export const fetchWarrantyList = async (
   }
 };
 
-// ─── Chi tiết yêu cầu bảo hành ────────────────────────────────────────────────
 export const fetchWarrantyById = async (
   id: string,
 ): Promise<IWarrantyDetail | null> => {
@@ -58,7 +56,6 @@ export const fetchWarrantyById = async (
   }
 };
 
-// ─── Tiếp nhận bảo hành mới ───────────────────────────────────────────────────
 export const createWarrantyRequest = async (
   payload: ICreateWarrantyPayload,
 ): Promise<boolean> => {
@@ -71,7 +68,6 @@ export const createWarrantyRequest = async (
   }
 };
 
-// ─── Danh sách bảo hành của user đang đăng nhập ──────────────────────────────
 export const fetchMyWarranties = async (
   params: { status?: number; page?: number; limit?: number } = {},
 ): Promise<IWarrantyListResponse | null> => {
@@ -92,7 +88,6 @@ export const fetchMyWarranties = async (
   }
 };
 
-// ─── Cập nhật trạng thái ──────────────────────────────────────────────────────
 export const updateWarrantyStatus = async (
   id: string,
   payload: IUpdateWarrantyStatusPayload,
@@ -106,7 +101,6 @@ export const updateWarrantyStatus = async (
   }
 };
 
-// ─── Tra cứu lịch sử theo IMEI/Serial ────────────────────────────────────────
 export const lookupWarrantyByImei = async (
   imei: string,
 ): Promise<IImeiLookupResponse | null> => {
@@ -121,7 +115,6 @@ export const lookupWarrantyByImei = async (
   }
 };
 
-// ─── Upload ảnh thiết bị ──────────────────────────────────────────────────────
 export const uploadWarrantyImage = async (
   file: File,
 ): Promise<string | null> => {
@@ -140,7 +133,6 @@ export const uploadWarrantyImage = async (
   }
 };
 
-// ─── Tra cứu thông tin sản phẩm từ IMEI trong kho xuất ──────────────────────────────────
 export const lookupImeiFromStock = async (
   imei: string,
 ): Promise<IImeiStockLookupResponse | null> => {
@@ -155,7 +147,6 @@ export const lookupImeiFromStock = async (
   }
 };
 
-// ─── Lịch sử sửa chữa toàn bộ theo IMEI/Serial ─—─—───────────────
 export const fetchRepairLogHistory = async (
   imei: string,
 ): Promise<IRepairLogHistoryResponse | null> => {
@@ -170,7 +161,6 @@ export const fetchRepairLogHistory = async (
   }
 };
 
-// ─── Lịch sử sửa chữa — xem ───────────────────────────────────────────────────
 export const fetchRepairLogs = async (
   warrantyId: string,
 ): Promise<IRepairLogListResponse | null> => {
@@ -184,7 +174,6 @@ export const fetchRepairLogs = async (
   }
 };
 
-// ─── Lịch sử sửa chữa — thêm mới ─────────────────────────────────────────────
 export const addRepairLog = async (
   warrantyId: string,
   payload: ICreateRepairLogPayload,
@@ -201,7 +190,6 @@ export const addRepairLog = async (
   }
 };
 
-// ─── Tra cứu lịch sử sửa chữa công khai theo IMEI (không cần auth) ───────────
 export const fetchPublicRepairHistory = async (
   imei: string,
 ): Promise<IPublicRepairHistoryResponse | null> => {

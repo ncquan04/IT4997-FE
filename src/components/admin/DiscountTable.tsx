@@ -61,7 +61,6 @@ const DiscountTable = ({
 
   return (
     <>
-      {/* ── Mobile card list (< md) ── */}
       <div className="block md:hidden divide-y divide-gray-100">
         <AnimatePresence>
           {programs.map((p, i) => {
@@ -180,7 +179,6 @@ const DiscountTable = ({
         </AnimatePresence>
       </div>
 
-      {/* ── Desktop table (≥ md) ── */}
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>

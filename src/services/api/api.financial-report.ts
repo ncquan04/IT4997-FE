@@ -12,8 +12,6 @@ export interface FinancialReportParams {
   groupBy?: "supplier" | "branch";
 }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 export interface TopProductItem {
   _id: string;
   title: string;
@@ -145,8 +143,6 @@ export interface RentCostBranchItem {
   isActive: boolean;
   rentCostHistory: RentCostHistoryEntry[];
 }
-
-// ─── API calls ───────────────────────────────────────────────────────────────
 
 function toParams(p: FinancialReportParams): Record<string, string> {
   const out: Record<string, string> = {};

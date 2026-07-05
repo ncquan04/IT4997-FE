@@ -3,10 +3,6 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AppRoutes } from "../../navigation";
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Types                                                                     */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 export interface SavedFunnel {
   id: string;
   name: string;
@@ -17,10 +13,6 @@ export interface SavedFunnel {
   category: "sample" | "custom";
   createdAt: string;
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Sample Funnels                                                            */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 export const SAMPLE_FUNNELS: SavedFunnel[] = [
   {
@@ -197,10 +189,6 @@ export const SAMPLE_FUNNELS: SavedFunnel[] = [
   },
 ];
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Storage helpers                                                           */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 const STORAGE_KEY = "saved_funnels";
 
 export function getSavedFunnels(): SavedFunnel[] {
@@ -225,10 +213,6 @@ export function deleteSavedFunnel(id: string) {
   const existing = getSavedFunnels().filter((f) => f.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Funnel Icon                                                               */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const FUNNEL_ICONS: Record<
   string,
@@ -383,10 +367,6 @@ const FunnelIcon = ({
   );
 };
 
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Funnel Card                                                               */
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 const FunnelCard = ({
   funnel,
   index,
@@ -494,10 +474,6 @@ const FunnelCard = ({
     </motion.div>
   );
 };
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-/*  Page Component                                                            */
-/* ═══════════════════════════════════════════════════════════════════════════ */
 
 const FunnelListPage = () => {
   const navigate = useNavigate();
