@@ -41,7 +41,7 @@ export function logEvent(eventName: string, params?: Record<string, any>) {
   const payload: EventPayload = {
     anonymousId: getAnonymousId(),
     sessionId: getSessionId(),
-    userId: AppStorage.get("user")?._id ?? null,
+    userId: AppStorage.get("user")?.id ?? null,
     eventName,
     params: params || {},
     page: window.location.pathname,
