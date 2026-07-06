@@ -1,3 +1,5 @@
+import AppStorage from "../storage";
+
 const ANON_ID_KEY = "_auid";
 const SESSION_ID_KEY = "_sid";
 const FLUSH_INTERVAL = 10_000; // 10s
@@ -35,26 +37,19 @@ function getSessionId(): string {
   return id;
 }
 
-let _userId: string | null = null;
-
-export function setAnalyticsUserId(userId: string | null) {
-  _userId = userId;
-  // if (userId) {
-  //   logEvent("identify", { userId });
-  // }
-}
-
 export function logEvent(eventName: string, params?: Record<string, any>) {
   const payload: EventPayload = {
     anonymousId: getAnonymousId(),
     sessionId: getSessionId(),
-    userId: _userId,
+    userId: AppStorage.get("user")?._id ?? null,
     eventName,
     params: params || {},
     page: window.location.pathname,
     referrer: document.referrer,
     timestamp: Date.now(),
   };
+
+  console.log("[analytics]", eventName, { anonymousId: payload.anonymousId, sessionId: payload.sessionId, userId: payload.userId });
 
   eventBuffer.push(payload);
 
